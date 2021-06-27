@@ -1,3 +1,7 @@
+mod cl_args;
+
 fn main() {
-    println!("Hello, world!");
+    let args = cl_args::parse_args();
+
+    println!("Ready {:?}", args);
 }
