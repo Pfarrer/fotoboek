@@ -1,18 +1,30 @@
-use std::path::PathBuf;
+use std::path::Path;
+
 use clap::{AppSettings, Clap};
 
 #[derive(Clap, Debug)]
 #[clap(name = "Family Album", setting = AppSettings::ColoredHelp)]
 pub struct Args {
     #[clap(short, long)]
-    pub image_root: PathBuf,
+    pub image_root: String,
 
     #[clap(short, long)]
-    pub data_root: PathBuf,
+    pub data_root: String,
 }
 
-pub fn parse_args() -> Args {
-    Args::parse()
+pub fn parse_args() -> Result<Args, String> {
+    let args = Args::parse();
+
+    validate_args(&args)?;
+    Result::Ok(args)
+}
+
+fn validate_args(args: &Args) -> Result<(), String> {
+    if !Path::new(&args.image_root).is_dir() {
+        return Result::Err("image_root is not a directory!".to_string())
+    }
+
+    Result::Ok(())
 }
 
 #[cfg(test)]
@@ -32,8 +44,8 @@ mod tests {
         assert!(result.is_ok());
         
         let args = result.ok().unwrap();
-        assert_eq!(args.image_root.to_str(), Option::Some("/home/me"));
-        assert_eq!(args.data_root.to_str(), Option::Some("/tmp/repo"));
+        assert_eq!(args.image_root, "/home/me");
+        assert_eq!(args.data_root, "/tmp/repo");
     }
 
     #[test]
