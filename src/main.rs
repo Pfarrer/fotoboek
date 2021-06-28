@@ -6,6 +6,6 @@ fn main() {
     let source_image = source_images::search(&args.image_root);
 
     for source_image in source_image {
-        println!("{:?}", source_image);
+        println!("Found image: {:?}", source_image);
     }
 }
