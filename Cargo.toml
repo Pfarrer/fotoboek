@@ -10,12 +10,17 @@ log = "0.4"
 env_logger = "0.8.4"
 clap = "3.0.0-beta.2"
 glob = "0.3.0"
-
-rocket = "0.5.0-rc.1"
+serde = { version = "1.0", features = ["derive"] }
+diesel = { version = "^1.1.0", features = ["sqlite"] }
+rocket = { version = "0.5.0-rc.1", features = ["json"] }
 
 [dependencies.rocket_sync_db_pools]
 version = "0.1.0-rc.1"
 features = ["diesel_sqlite_pool"]
+
+[dependencies.rocket_dyn_templates]
+version = "0.1.0-rc.1"
+features = ["tera"]
 
 [dev-dependencies]
 tempdir = "0.3"

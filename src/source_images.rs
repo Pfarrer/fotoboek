@@ -3,12 +3,12 @@ use std::path::PathBuf;
 
 use glob::{glob_with, MatchOptions};
 
-#[derive(Debug)]
-pub struct SourceImage {
-    pub path: PathBuf,
+pub fn search_by_env_root() -> Vec<PathBuf> {
+    let source_image_root = dotenv::var("IMAGE_ROOT").unwrap();
+    search(&source_image_root)
 }
 
-pub fn search(root: &String) -> Vec<SourceImage> {
+fn search(root: &String) -> Vec<PathBuf> {
     let options = MatchOptions {
         case_sensitive: false,
         require_literal_separator: false,
@@ -17,7 +17,7 @@ pub fn search(root: &String) -> Vec<SourceImage> {
     glob_with(&format!("{}/**/*.jpg", root), options)
         .unwrap()
         .chain(glob_with(&format!("{}/**/*.jpeg", root), options).unwrap())
-        .filter_map(|entry| entry.ok().map(|path| SourceImage { path: path }))
+        .filter_map(|entry| entry.ok().map(|path| path.canonicalize().unwrap()))
         .collect()
 }
 
