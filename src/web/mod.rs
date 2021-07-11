@@ -1,5 +1,6 @@
 use rocket_dyn_templates::Template;
 
+mod binary_response;
 mod routes;
 
 pub async fn init() {

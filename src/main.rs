@@ -5,6 +5,7 @@ extern crate diesel;
 
 use dotenv;
 
+mod core;
 mod db;
 mod source_images;
 mod web;

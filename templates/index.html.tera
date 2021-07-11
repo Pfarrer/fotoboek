@@ -14,7 +14,7 @@
     <h1>Hello</h1>
     <p>{{ image_count }} Images</p>
     {% for image in images %}
-    <img src="/images/{{ image.id }}" alt="{{ image.filename }}">
+    <img src="/images/{{ image.id }}?size=medium" alt="{{ image.filename }}">
     {% endfor %}
   </body>
 </html>

@@ -1,5 +1,0 @@
-## Initialize new Family Album
-```
-diesel setup
-diesel migration run
-```
