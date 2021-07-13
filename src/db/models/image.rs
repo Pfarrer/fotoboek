@@ -3,6 +3,7 @@ use serde::Serialize;
 
 use crate::db::schema::images;
 use crate::db::schema::images::dsl::*;
+use std::path::PathBuf;
 
 #[derive(Insertable, Queryable, Serialize)]
 #[table_name = "images"]
@@ -13,6 +14,19 @@ pub struct Image {
 }
 
 impl Image {
+    pub fn from_path_buf(source_path: &PathBuf) -> Image {
+        Image {
+            id: None,
+            filename: source_path
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string(),
+            abs_path: source_path.to_string_lossy().into_owned()
+        }
+    }
+
     pub fn all(c: &diesel::SqliteConnection) -> Vec<Image> {
         images.load::<Image>(c).expect("Query all images")
     }
