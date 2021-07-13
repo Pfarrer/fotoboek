@@ -17,6 +17,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
+    - name: Install LLVM and Clang
+      uses: KyleMayes/install-llvm-action@v1
+      with:
+        version: "10.0"
+    
     - uses: Dovyski/setup-opencv-action@v1
       with:
         opencv-version: '4.5.2'
