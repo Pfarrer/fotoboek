@@ -9,9 +9,10 @@ table! {
 table! {
     tasks (id) {
         id -> Nullable<Integer>,
-        image_id -> Nullable<Integer>,
+        image_id -> Integer,
         module -> Text,
         action -> Text,
+        priority -> Integer,
         blocked_by_task_id -> Nullable<Integer>,
     }
 }

@@ -11,15 +11,24 @@ pub struct Task {
     pub image_id: i32,
     pub module: String,
     pub action: String,
+    pub priority: i32,
     pub blocked_by_task_id: Option<i32>,
 }
 
 impl Task {
-    pub fn insert(&self, c: &diesel::SqliteConnection) -> Result<(), ()> {
+    pub fn all(conn: &diesel::SqliteConnection) -> Vec<Task> {
+        tasks.load::<Task>(conn).expect("Query all task")
+    }
+
+    pub fn insert(self, conn: &diesel::SqliteConnection) -> Result<Task, String> {
         insert_into(tasks)
-            .values(self)
-            .execute(c)
-            .map(|_| ())
-            .map_err(|_| ())
+            .values(&self)
+            .execute(conn)
+            .map_err(|err| err.to_string())?;
+
+        tasks
+            .order(id.desc())
+            .first(conn)
+            .map_err(|err| err.to_string())
     }
 }

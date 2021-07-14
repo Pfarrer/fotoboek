@@ -23,22 +23,29 @@ impl Image {
                 .to_str()
                 .unwrap()
                 .to_string(),
-            abs_path: source_path.to_string_lossy().into_owned()
+            abs_path: source_path.to_string_lossy().into_owned(),
         }
     }
 
-    pub fn all(c: &diesel::SqliteConnection) -> Vec<Image> {
-        images.load::<Image>(c).expect("Query all images")
+    pub fn all(conn: &diesel::SqliteConnection) -> Vec<Image> {
+        images.load::<Image>(conn).expect("Query all images")
     }
-    pub fn by_id(c: &diesel::SqliteConnection, image_id: i32) -> Option<Image> {
-        images.filter(id.eq(image_id)).first::<Image>(c).ok()
+    pub fn by_id(conn: &diesel::SqliteConnection, image_id: i32) -> Option<Image> {
+        images.filter(id.eq(image_id)).first::<Image>(conn).ok()
     }
 
-    pub fn insert(&self, c: &diesel::SqliteConnection) -> Result<(), ()> {
+    pub fn insert(self, conn: &diesel::SqliteConnection) -> Result<Option<Image>, String> {
         insert_into(images)
-            .values(self)
-            .execute(c)
-            .map(|_| ())
-            .map_err(|_| ())
+            .values(&self)
+            .execute(conn)
+            .map_err(|err| err.to_string())?;
+        let image = images
+            .filter(abs_path.eq(self.abs_path))
+            .limit(1)
+            .load(conn)
+            .map_err(|err| err.to_string())?
+            .into_iter()
+            .next();
+        Ok(image)
     }
 }
