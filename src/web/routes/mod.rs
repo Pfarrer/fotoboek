@@ -9,6 +9,7 @@ pub fn routes() -> Vec<rocket::Route> {
         images::image_by_id_and_size,
         api::images,
         api::tasks,
+        api::metadata,
         api::scan,
     ]
 }

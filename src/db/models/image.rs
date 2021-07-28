@@ -30,8 +30,11 @@ impl Image {
     pub fn all(conn: &diesel::SqliteConnection) -> Vec<Image> {
         images.load::<Image>(conn).expect("Query all images")
     }
-    pub fn by_id(conn: &diesel::SqliteConnection, image_id: i32) -> Option<Image> {
-        images.filter(id.eq(image_id)).first::<Image>(conn).ok()
+    pub fn by_id(conn: &diesel::SqliteConnection, image_id: i32) -> Result<Image, String> {
+        images
+            .filter(id.eq(image_id))
+            .first::<Image>(conn)
+            .map_err(|err| err.to_string())
     }
 
     pub fn insert(self, conn: &diesel::SqliteConnection) -> Result<Option<Image>, String> {

@@ -1,4 +1,5 @@
 use crate::core::models::ImageSize;
+use crate::db::models::Preview;
 use crate::db::Database;
 use rocket::fs::NamedFile;
 use rocket::http::ContentType;
@@ -27,18 +28,18 @@ pub async fn image_by_id_and_size(
     size: RestImageSize,
     db: Database,
 ) -> Option<BinaryResponse> {
-    let image = db.run(move |c| Image::by_id(&c, id)).await.unwrap();
-    let original_abs_path = Path::new(&image.abs_path);
-
     let image_size = match size {
         RestImageSize::Large => ImageSize::Large,
         RestImageSize::Medium => ImageSize::Medium,
         RestImageSize::Small => ImageSize::Small,
     };
-    let resized_image_raw =
-        crate::core::modules::image_previews::resize(&original_abs_path, &image_size).ok()?;
+    let preview = db
+        .run(move |conn| Preview::by_image_id_and_size(&conn, id, image_size.to_string()))
+        .await
+        .unwrap();
+
     Some(BinaryResponse {
-        body: resized_image_raw,
+        body: preview.data,
         content_type: ContentType::JPEG,
     })
 }

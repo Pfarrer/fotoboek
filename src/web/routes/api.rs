@@ -1,5 +1,5 @@
 use crate::core::image_event_handler;
-use crate::db::models::{Image, Task};
+use crate::db::models::{Image, Metadata, Task};
 use crate::db::Database;
 use rocket::futures::future;
 use rocket::serde::json::Json;
@@ -9,6 +9,12 @@ use serde::Serialize;
 pub async fn images(db: Database) -> Json<Vec<Image>> {
     let images = db.run(move |conn| Image::all(conn)).await;
     Json(images)
+}
+
+#[get("/api/metadata")]
+pub async fn metadata(db: Database) -> Json<Vec<Metadata>> {
+    let metadata = db.run(move |conn| Metadata::all(conn)).await;
+    Json(metadata)
 }
 
 #[get("/api/tasks")]

@@ -10,22 +10,19 @@ pub struct Task {
     pub id: Option<i32>,
     pub image_id: i32,
     pub module: String,
-    pub action: String,
     pub priority: i32,
-    pub blocked_by_task_id: Option<i32>,
 }
 
 impl Task {
     pub fn all(conn: &diesel::SqliteConnection) -> Vec<Task> {
-        tasks.load::<Task>(conn).expect("Query tasks")
+        tasks.load::<Task>(conn).expect("Query tasks failed")
     }
 
     pub fn all_unblocked_ordered_by_priority(conn: &diesel::SqliteConnection) -> Vec<Task> {
         tasks
-            .filter(blocked_by_task_id.is_null())
-            .order(priority.desc())
+            .order(priority.asc())
             .load::<Task>(conn)
-            .expect("Query tasks")
+            .expect("Query tasks failed")
     }
 
     pub fn insert(self, conn: &diesel::SqliteConnection) -> Result<Task, String> {
