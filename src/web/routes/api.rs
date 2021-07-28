@@ -1,5 +1,5 @@
 use crate::core::image_event_handler;
-use crate::db::models::{Image, Metadata, Task};
+use crate::db::models::*;
 use crate::db::Database;
 use rocket::futures::future;
 use rocket::serde::json::Json;
@@ -15,6 +15,12 @@ pub async fn images(db: Database) -> Json<Vec<Image>> {
 pub async fn metadata(db: Database) -> Json<Vec<Metadata>> {
     let metadata = db.run(move |conn| Metadata::all(conn)).await;
     Json(metadata)
+}
+
+#[get("/api/folders")]
+pub async fn folders(db: Database) -> Json<Vec<Folder>> {
+    let folders = db.run(move |conn| Folder::all(conn)).await;
+    Json(folders)
 }
 
 #[get("/api/tasks")]

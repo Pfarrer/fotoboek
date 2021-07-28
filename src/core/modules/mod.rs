@@ -2,6 +2,7 @@ use crate::db::models::{Image, Task};
 use crate::db::Database;
 use std::time::Instant;
 
+mod folder;
 mod metadata;
 mod preview;
 
@@ -10,6 +11,7 @@ pub async fn create_tasks_on_new_image(
     image: &Image,
 ) -> std::result::Result<(), std::string::String> {
     metadata::create_tasks_on_new_image(db, image).await?;
+    folder::create_tasks_on_new_image(db, image).await?;
     preview::create_tasks_on_new_image(db, image).await?;
     Ok(())
 }
@@ -19,6 +21,7 @@ pub fn run_task(conn: &diesel::SqliteConnection, task: &Task) -> Result<(), Stri
 
     match task.module.as_str() {
         metadata::MODULE_ID => metadata::run_task(conn, task),
+        folder::MODULE_ID => folder::run_task(conn, task),
         preview::MODULE_ID => preview::run_task(conn, task),
         &_ => Err(format!("Unknown module in task {:?}", task).into()),
     }?;

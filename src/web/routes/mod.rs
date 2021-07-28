@@ -10,6 +10,7 @@ pub fn routes() -> Vec<rocket::Route> {
         api::images,
         api::tasks,
         api::metadata,
+        api::folders,
         api::scan,
     ]
 }
