@@ -11,7 +11,6 @@ use crate::web::binary_response::BinaryResponse;
 #[derive(Debug, PartialEq, FromFormField)]
 pub enum RestImageSize {
     Large,
-    Medium,
     Small,
 }
 
@@ -30,7 +29,6 @@ pub async fn image_by_id_and_size(
 ) -> Option<BinaryResponse> {
     let image_size = match size {
         RestImageSize::Large => ImageSize::Large,
-        RestImageSize::Medium => ImageSize::Medium,
         RestImageSize::Small => ImageSize::Small,
     };
     let preview = db

@@ -40,22 +40,9 @@ pub fn run_task(conn: &diesel::SqliteConnection, task: &Task) -> Result<(), Stri
         .insert(conn)?
     };
 
-    let preview_medium = {
-        let data =
-            resize_by_vec(preview_large.data, &ImageSize::Medium).expect("Resize medium failed");
-
-        Preview {
-            id: None,
-            image_id: task.image_id,
-            size: ImageSize::Medium.to_string(),
-            data,
-        }
-        .insert(conn)?
-    };
-
     {
         let data =
-            resize_by_vec(preview_medium.data, &ImageSize::Small).expect("Resize medium failed");
+            resize_by_vec(preview_large.data, &ImageSize::Small).expect("Resize small failed");
 
         Preview {
             id: None,
@@ -97,15 +84,11 @@ impl ImageSize {
         match self {
             ImageSize::Large => Size {
                 width: 2000,
-                height: 1500,
-            },
-            ImageSize::Medium => Size {
-                width: 600,
-                height: 450,
+                height: 2000,
             },
             ImageSize::Small => Size {
                 width: 200,
-                height: 150,
+                height: 200,
             },
         }
     }

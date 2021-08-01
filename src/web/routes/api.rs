@@ -17,10 +17,10 @@ pub async fn metadata(db: Database) -> Json<Vec<Metadata>> {
     Json(metadata)
 }
 
-#[get("/api/folders")]
-pub async fn folders(db: Database) -> Json<Vec<Folder>> {
-    let folders = db.run(move |conn| Folder::all(conn)).await;
-    Json(folders)
+#[get("/api/image_paths")]
+pub async fn image_paths(db: Database) -> Json<Vec<ImagePath>> {
+    let image_paths = db.run(move |conn| ImagePath::all(conn)).await;
+    Json(image_paths)
 }
 
 #[get("/api/tasks")]

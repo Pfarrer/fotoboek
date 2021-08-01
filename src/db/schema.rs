@@ -1,8 +1,9 @@
 table! {
-    folders (abs_path, image_id) {
-        abs_path -> Text,
+    image_paths (abs_dir_path, image_id) {
+        abs_dir_path -> Text,
         image_id -> Integer,
         distance -> Integer,
+        parent_dir_path -> Nullable<Text>,
     }
 }
 
@@ -50,13 +51,13 @@ table! {
     }
 }
 
-joinable!(folders -> images (image_id));
+joinable!(image_paths -> images (image_id));
 joinable!(metadata -> images (image_id));
 joinable!(previews -> images (image_id));
 joinable!(tasks -> images (image_id));
 
 allow_tables_to_appear_in_same_query!(
-    folders,
+    image_paths,
     images,
     metadata,
     previews,

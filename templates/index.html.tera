@@ -5,16 +5,22 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Family Album</title>
-    <link rel="stylesheet" href="css/main.css" />
-    <link rel="icon" href="assets/favicon.png" />
+    <title>Fotoboek</title>
   </head>
 
   <body>
-    <h1>Hello</h1>
-    <p>{{ image_count }} Images</p>
-    {% for image in images %}
-    <img src="/images/{{ image.id }}?size=medium" alt="{{ image.filename }}">
+    <h1>{{ current_directory_name }}</h1>
+
+    <ul>
+      {% for sub_dir in sub_dirs %}
+      <li>
+        <a href="{{ sub_dir.url }}">{{ sub_dir.name }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+
+    {% for image_id in image_ids %}
+    <img src="/images/{{ image_id }}?size=small">
     {% endfor %}
   </body>
 </html>
