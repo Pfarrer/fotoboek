@@ -19,18 +19,20 @@ jobs:
     - name: Install LLVM and Clang
       uses: KyleMayes/install-llvm-action@v1
       with:
-        version: "10.0"
+        version: "11.0"
 
     - name: Cache OpenCV
-      id: cache-opencv
+      id: opencv-cache
       uses: actions/cache@v2
       with:
-          path: /usr/local
-          key: fixed-opencv-cache
-    
-    - uses: Dovyski/setup-opencv-action@v1
-      if: steps.cache-opencv.output.cache-hit != 'true'
-      with:
+        path: ./opencv-install
+        key: ${{ runner.os }}-opencv-cache
+
+    - name: Install OpenCV
+      uses: rayandrews/with-opencv-action@v1
+      with:  
+        dir: ./opencv-install
+        cached: ${{ steps.opencv-cache.outputs.cache-hit }}
         opencv-version: '4.5.2'
 
     - uses: actions-rs/toolchain@v1
