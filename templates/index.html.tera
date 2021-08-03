@@ -1,26 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+{% extends "base" %}
 
-    <title>Fotoboek</title>
-  </head>
+{% block body %}
+  <h1>{{ current_directory_name }}</h1>
 
-  <body>
-    <h1>{{ current_directory_name }}</h1>
-
-    <ul>
-      {% for sub_dir in sub_dirs %}
-      <li>
-        <a href="{{ sub_dir.url }}">{{ sub_dir.name }}</a>
-      </li>
-      {% endfor %}
-    </ul>
-
-    {% for image_id in image_ids %}
-    <img src="/images/{{ image_id }}?size=small">
+  <ul>
+    {% for sub_dir in sub_dirs %}
+    <li>
+      <a href="{{ sub_dir.url }}">{{ sub_dir.name }}</a>
+    </li>
     {% endfor %}
-  </body>
-</html>
+  </ul>
+
+  <div class="pswp-gallery pswp-gallery--single-column" id="gallery--simple">
+    {% for image_meta in image_metadata %}
+    
+    {% endfor %}
+  </div>
+{% endblock body %}

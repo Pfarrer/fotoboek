@@ -10,6 +10,10 @@ pub async fn init() {
         .attach(Template::fairing())
         .attach(crate::db::Database::fairing())
         .attach(worker_thread_fairing())
+        .mount(
+            "/assets",
+            rocket::fs::FileServer::from(rocket::fs::relative!("assets")),
+        )
         .mount("/", routes::routes())
         .launch()
         .await

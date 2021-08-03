@@ -27,7 +27,7 @@ impl Preview {
 
     pub fn insert(self, conn: &diesel::SqliteConnection) -> Result<Preview, String> {
         insert_into(previews)
-            .values(self)
+            .values(&self)
             .execute(conn)
             .map_err(|err| err.to_string())?;
         previews

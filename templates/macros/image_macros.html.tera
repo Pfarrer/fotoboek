@@ -1,0 +1,9 @@
+{% macro image(image_meta) %}
+<a href="/images/{{ image_meta.image_id }}?size=large" 
+    data-pswp-width="{{ image_meta.resolution_x }}" 
+    data-pswp-height="{{ image_meta.resolution_y }}" 
+    data-cropped="true" 
+    target="_blank">
+    <img src="/images/{{ image_meta.image_id }}?size=small" alt="" />
+</a>
+{% endmacro input %}

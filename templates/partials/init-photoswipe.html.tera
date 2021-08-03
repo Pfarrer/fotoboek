@@ -1,0 +1,18 @@
+<link rel="stylesheet" href="/assets/photoswipe/photoswipe.css"/><script type="module">
+
+// Include Lightbox 
+import PhotoSwipeLightbox from '/assets/photoswipe/photoswipe-lightbox.esm.min.js';
+
+const lightbox = new PhotoSwipeLightbox({
+  // may select multiple "galleries"
+  gallerySelector: '#gallery--simple',
+
+  // Elements within gallerySelector (slides)
+  childSelector: 'a',
+
+  // Include PhotoSwipe Core
+  // and use absolute path (that starts with http(s)://)
+  pswpModule: '/assets/photoswipe/photoswipe.esm.min.js'
+});
+lightbox.init();
+</script>

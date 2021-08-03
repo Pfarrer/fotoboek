@@ -24,20 +24,10 @@ pub async fn index(db: Database, path: Option<String>, deep: Option<bool>) -> Op
     let current_directory_name = parent_dir_path.clone().unwrap_or("Start".into());
     let is_root_dir = parent_dir_path.is_none();
 
-    info!(
-        "Fetching for parent dir {:?} and max_distance {}",
-        parent_dir_path, max_distance
-    );
-
     let image_root_string = dotenv::var("IMAGE_ROOT").unwrap();
     let abs_dir_path = parent_dir_path.clone().unwrap_or(image_root_string);
-    let image_ids: Vec<i32> = db
-        .run(move |conn| {
-            ImagePath::by_abs_dir_path(conn, &abs_dir_path, max_distance)
-                .iter()
-                .map(|image_path| image_path.image_id)
-                .collect()
-        })
+    let image_metadata: Vec<Metadata> = db
+        .run(move |conn| Metadata::by_image_path_and_ordered(conn, &abs_dir_path, max_distance))
         .await;
 
     let parent_dir_path_ref = parent_dir_path.clone();
@@ -45,16 +35,14 @@ pub async fn index(db: Database, path: Option<String>, deep: Option<bool>) -> Op
         .run(move |conn| ImagePath::subdirs_of(conn, parent_dir_path_ref.as_deref()))
         .await;
 
-    println!("!!! subdir_paths {:?}", subdir_paths);
-
     let sub_dirs: Vec<TmplDirectory> = subdir_paths
         .iter()
-        .map(|abs_path| TmplDirectory::new(abs_path))
+        .map(|abs_path| TmplDirectory::new(abs_path, deep.clone()))
         .collect();
 
     #[derive(Serialize)]
     struct IndexContext<'a> {
-        image_ids: Vec<i32>,
+        image_metadata: Vec<Metadata>,
         current_directory_name: String,
         is_root_dir: bool,
         sub_dirs: Vec<TmplDirectory<'a>>,
@@ -67,17 +55,17 @@ pub async fn index(db: Database, path: Option<String>, deep: Option<bool>) -> Op
     }
 
     impl<'a> TmplDirectory<'a> {
-        fn new(abs_path: &'a String) -> TmplDirectory<'a> {
+        fn new(abs_path: &'a String, uri_deep: Option<bool>) -> TmplDirectory<'a> {
             let name = Path::new(abs_path).file_name().unwrap().to_str().unwrap();
             TmplDirectory {
                 name,
-                url: rocket::uri!(index(Some(abs_path), Some(false))).to_string(),
+                url: rocket::uri!(index(Some(abs_path), uri_deep)).to_string(),
             }
         }
     }
 
     let context = IndexContext {
-        image_ids,
+        image_metadata,
         current_directory_name,
         is_root_dir,
         sub_dirs,

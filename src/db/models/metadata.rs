@@ -4,7 +4,7 @@ use serde::Serialize;
 use crate::db::schema::metadata;
 use crate::db::schema::metadata::dsl::*;
 
-#[derive(Insertable, Queryable, Serialize, Debug)]
+#[derive(Insertable, Queryable, QueryableByName, Serialize, Debug)]
 #[table_name = "metadata"]
 pub struct Metadata {
     pub image_id: i32,
@@ -31,6 +31,27 @@ impl Metadata {
             .filter(image_id.eq(by_image_id))
             .first::<Metadata>(conn)
             .ok()
+    }
+    pub fn by_image_path_and_ordered(
+        conn: &diesel::SqliteConnection,
+        by_abs_dir_path: &str,
+        max_distance: i32,
+    ) -> Vec<Metadata> {
+        diesel::sql_query(
+            r#"
+                SELECT m.*
+                FROM metadata m
+                INNER JOIN image_paths p
+                    ON p.image_id = m.image_id
+                WHERE p.abs_dir_path = ?
+                    AND distance <= ?
+                ORDER BY COALESCE(m.exif_date, m.file_date)
+            "#,
+        )
+        .bind::<diesel::sql_types::Text, _>(by_abs_dir_path)
+        .bind::<diesel::sql_types::Integer, _>(max_distance)
+        .load(conn)
+        .expect("Query by_image_path_and_ordered")
     }
 
     pub fn insert(self, conn: &diesel::SqliteConnection) -> Result<(), String> {

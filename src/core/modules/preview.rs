@@ -8,6 +8,11 @@ use std::path::Path;
 
 pub const MODULE_ID: &str = "preview";
 
+const SIZE_ZERO: Size = Size {
+    height: 0,
+    width: 0,
+};
+
 pub async fn create_tasks_on_new_image(db: &Database, image: &Image) -> Result<(), String> {
     let image_id = image.id.expect("Image must have an id");
 
@@ -70,8 +75,16 @@ fn resize_by_path(path: &Path, image_size: &ImageSize) -> Result<Vec<u8>, ()> {
 
 fn resize_by_cv_mat(img: &Mat, image_size: &ImageSize) -> Result<Vec<u8>, ()> {
     let mut dst = Mat::default();
-    let size = image_size.to_opencv_size();
-    imgproc::resize(&img, &mut dst, size, 0., 0., imgproc::INTER_AREA).expect("Resize failed");
+    let scale_factor = image_size.to_scale_factor(img.size().expect("Image size"));
+    imgproc::resize(
+        &img,
+        &mut dst,
+        SIZE_ZERO,
+        scale_factor,
+        scale_factor,
+        imgproc::INTER_AREA,
+    )
+    .expect("Resize failed");
     let mut out = opencv::core::Vector::<u8>::new();
     let params = opencv::core::Vector::<i32>::new();
     imgcodecs::imencode(".jpg", &dst, &mut out, &params).expect("Encode failed");
@@ -80,7 +93,7 @@ fn resize_by_cv_mat(img: &Mat, image_size: &ImageSize) -> Result<Vec<u8>, ()> {
 }
 
 impl ImageSize {
-    fn to_opencv_size(&self) -> Size {
+    fn target_size(&self) -> Size {
         match self {
             ImageSize::Large => Size {
                 width: 2000,
@@ -91,5 +104,55 @@ impl ImageSize {
                 height: 200,
             },
         }
+    }
+
+    fn to_scale_factor(&self, image_size: Size) -> f64 {
+        let target_size = self.target_size();
+        let x_ratio = target_size.width as f64 / image_size.width as f64;
+        let y_ratio = target_size.height as f64 / image_size.height as f64;
+
+        if x_ratio > y_ratio {
+            y_ratio
+        } else {
+            x_ratio
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn too_wide() {
+        let image_size = Size {
+            width: 3000,
+            height: 1000,
+        };
+        let scale_factor = ImageSize::Large.to_scale_factor(image_size);
+
+        assert_eq!(2. / 3., scale_factor);
+    }
+
+    #[test]
+    fn too_tall() {
+        let image_size = Size {
+            width: 2000,
+            height: 4000,
+        };
+        let scale_factor = ImageSize::Large.to_scale_factor(image_size);
+
+        assert_eq!(0.5, scale_factor);
+    }
+
+    #[test]
+    fn both_sides_too_large() {
+        let image_size = Size {
+            width: 4000,
+            height: 4000,
+        };
+        let scale_factor = ImageSize::Large.to_scale_factor(image_size);
+
+        assert_eq!(0.5, scale_factor);
     }
 }
