@@ -1,7 +1,17 @@
 {% extends "base" %}
+{% import "macros/image_macros" as image_macros %}
 
 {% block body %}
   <h1>{{ current_directory_name }}</h1>
+
+  <p>
+    Include Subfolders:
+    {% if is_deep %}
+      On / <a href="{{ toggle_deep_url }}">Off</a>
+    {% else %}
+      <a href="{{ toggle_deep_url }}">On</a> / Off
+    {% endif %}
+  </p>
 
   <ul>
     {% for sub_dir in sub_dirs %}
@@ -11,9 +21,9 @@
     {% endfor %}
   </ul>
 
-  <div class="pswp-gallery pswp-gallery--single-column" id="gallery--simple">
+  <div id="gallery">
     {% for image_meta in image_metadata %}
-    
+    {{ image_macros::image(image_meta=image_meta) }}
     {% endfor %}
   </div>
 {% endblock body %}

@@ -6,7 +6,7 @@ use std::path::Path;
 
 #[get("/?<path>&<deep>")]
 pub async fn index(db: Database, path: Option<String>, deep: Option<bool>) -> Option<Template> {
-    let parent_dir_path = if let Some(val) = path {
+    let parent_dir_path = if let Some(val) = path.clone() {
         match get_requested_path(&val) {
             Ok(path) => Some(path),
             Err(err) => {
@@ -22,7 +22,6 @@ pub async fn index(db: Database, path: Option<String>, deep: Option<bool>) -> Op
         _ => 0,
     };
     let current_directory_name = parent_dir_path.clone().unwrap_or("Start".into());
-    let is_root_dir = parent_dir_path.is_none();
 
     let image_root_string = dotenv::var("IMAGE_ROOT").unwrap();
     let abs_dir_path = parent_dir_path.clone().unwrap_or(image_root_string);
@@ -44,8 +43,9 @@ pub async fn index(db: Database, path: Option<String>, deep: Option<bool>) -> Op
     struct IndexContext<'a> {
         image_metadata: Vec<Metadata>,
         current_directory_name: String,
-        is_root_dir: bool,
         sub_dirs: Vec<TmplDirectory<'a>>,
+        is_deep: bool,
+        toggle_deep_url: String,
     }
 
     #[derive(Serialize)]
@@ -64,11 +64,13 @@ pub async fn index(db: Database, path: Option<String>, deep: Option<bool>) -> Op
         }
     }
 
+    let is_deep = deep.unwrap_or(false);
     let context = IndexContext {
         image_metadata,
         current_directory_name,
-        is_root_dir,
         sub_dirs,
+        is_deep,
+        toggle_deep_url: rocket::uri!(index(path, Some(!is_deep))).to_string(),
     };
 
     Some(Template::render("index", context))
