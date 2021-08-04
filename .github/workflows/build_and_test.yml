@@ -1,5 +1,3 @@
-name: Rust
-
 on:
   push:
     branches: [ main ]
@@ -42,6 +40,11 @@ jobs:
     - uses: Swatinem/rust-cache@v1
     
     - name: Build
-      run: cargo build --verbose
+      run: cargo build
+      
+  test:
+    needs: [build]
+
+    steps:
     - name: Run tests
       run: cargo test --verbose
