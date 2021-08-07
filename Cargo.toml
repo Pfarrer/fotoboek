@@ -1,8 +1,8 @@
 [package]
-name = "family_album"
+name = "fotoboek"
 version = "0.1.0"
 edition = "2018"
-repository = "https://github.com/Pfarrer/family_album"
+repository = "https://github.com/Pfarrer/fotoboek"
 
 [dependencies]
 dotenv = "0.15.0"

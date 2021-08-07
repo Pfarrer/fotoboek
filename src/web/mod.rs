@@ -22,9 +22,12 @@ pub async fn init() {
 
 fn worker_thread_fairing() -> AdHoc {
     AdHoc::on_liftoff("worker_thread", |rocket| {
+        let num_worker_threads: usize = dotenv::var("NUM_WORKER_THREADS").unwrap().parse().unwrap();
         Box::pin(async move {
-            let db = Database::get_one(rocket).await.unwrap();
-            crate::core::worker::spawn(db);
+            for i in 0..num_worker_threads {
+                let db = Database::get_one(rocket).await.unwrap();
+                crate::core::worker::spawn(db, i);
+            }
         })
     })
 }

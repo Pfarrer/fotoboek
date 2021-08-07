@@ -22,6 +22,7 @@ pub async fn create_tasks_on_new_image(db: &Database, image: &Image) -> Result<(
             image_id,
             module: MODULE_ID.into(),
             priority: 200,
+            work_started_at: None,
         }
         .insert(c)
     })
