@@ -1,2 +1,2 @@
 ALTER TABLE tasks
-ADD work_started_at TIMESTAMP NULL;
+ADD work_started_at TIMESTAMP NOT NULL;

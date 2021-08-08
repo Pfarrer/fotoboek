@@ -14,14 +14,8 @@ pub async fn create_tasks_on_new_image(db: &Database, image: &Image) -> Result<(
     let image_id = image.id.expect("Image must have an id");
 
     db.run(move |c| {
-        Task {
-            id: None,
-            image_id,
-            module: MODULE_ID.into(),
-            priority: 100,
-            work_started_at: None,
-        }
-        .insert(c)
+        Task::new(image_id, MODULE_ID.into(), 100)
+            .insert(c)
     })
     .await?;
 
@@ -98,14 +92,14 @@ fn get_exif_date(exif: &ExifData) -> Result<Option<NaiveDateTime>, String> {
 }
 
 fn get_exif_gps_lat_lon(exif: &ExifData) -> Option<(f32, f32)> {
-    let lat_option = get_exif_value(&exif, ExifTag::GPSLatitude);
-    let lon_option = get_exif_value(&exif, ExifTag::GPSLongitude);
+    let lat_option = get_exif_value(&exif, ExifTag::GPSLatitude)
+        .map(|s| latlon::parse_lng(s).ok()).flatten();
+    let lon_option = get_exif_value(&exif, ExifTag::GPSLongitude)
+        .map(|s| latlon::parse_lng(s).ok()).flatten();
 
-    if let (Some(lat_str), Some(lon_str)) = (lat_option, lon_option) {
-        let lat = latlon::parse_lat(lat_str).unwrap() as f32;
-        let lon = latlon::parse_lng(lon_str).unwrap() as f32;
-        return Some((lat, lon));
+    if let (Some(lat), Some(lon)) = (lat_option, lon_option) {
+        Some((lat as f32, lon as f32))
+    } else {
+        None
     }
-
-    None
 }

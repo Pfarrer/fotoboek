@@ -48,7 +48,7 @@ table! {
         image_id -> Integer,
         module -> Text,
         priority -> Integer,
-        work_started_at -> Nullable<Timestamp>,
+        work_started_at -> Timestamp,
     }
 }
 

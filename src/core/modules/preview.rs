@@ -17,14 +17,8 @@ pub async fn create_tasks_on_new_image(db: &Database, image: &Image) -> Result<(
     let image_id = image.id.expect("Image must have an id");
 
     db.run(move |c| {
-        Task {
-            id: None,
-            image_id,
-            module: MODULE_ID.into(),
-            priority: 200,
-            work_started_at: None,
-        }
-        .insert(c)
+        Task::new(image_id, MODULE_ID.into(), 200)
+            .insert(c)
     })
     .await?;
 

@@ -23,11 +23,11 @@ pub fn run_task(conn: &diesel::SqliteConnection, task: &Task) -> Result<(), Stri
         metadata::MODULE_ID => metadata::run_task(conn, task),
         image_path::MODULE_ID => image_path::run_task(conn, task),
         preview::MODULE_ID => preview::run_task(conn, task),
-        &_ => Err(format!("Unknown module in task {:?}", task).into()),
+        &_ => Err(format!("Unknown module in {:?}", task).into()),
     }?;
 
     info!(
-        "Task {:?} successfully finished after {:.4}ms",
+        "{:?} successfully finished after {:.4}ms",
         task,
         start_time.elapsed().as_millis()
     );
