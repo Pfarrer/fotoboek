@@ -1,24 +1,38 @@
-# FROM ubuntu as builder
+FROM ubuntu as builder
 
-# ARG DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 
-# RUN apt-get update
-# RUN apt-get install -y build-essential curl \
-#     libsqlite3-dev libopencv-dev \
-#     llvm-dev clang libclang-dev
-#     # llvm llvm-dev libclang-dev clang-tools clang libc++-dev \
-#     # sqlite3 libsqlite3-dev libopencv-dev
+RUN apt-get update
+RUN apt-get install -y build-essential curl \
+    libsqlite3-dev libopencv-dev \
+    llvm-dev clang libclang-dev
 
-# RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-# ENV PATH="/root/.cargo/bin:${PATH}"
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
 
-# WORKDIR /usr/src/myapp
-# COPY . .
-# RUN cargo build --release
+RUN cargo install diesel_cli --no-default-features --features "sqlite-bundled"
 
-FROM alpine
+WORKDIR /opt/fotoboek
+COPY . .
+RUN cargo build --release
 
 
-COPY --from=builder /usr/src/myapp/target/release/fotoboek /usr/bin/fotoboek
-COPY ./.env .env
-CMD ["fotoboek"]
+FROM ubuntu
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y libsqlite3-0 libopencv-contrib4.2
+
+WORKDIR /opt/fotoboek
+COPY --from=builder /root/.cargo/bin/diesel .
+COPY --from=builder /opt/fotoboek/target/release/fotoboek .
+COPY --from=builder /opt/fotoboek/assets/ assets/
+COPY --from=builder /opt/fotoboek/migrations/ migrations/
+COPY --from=builder /opt/fotoboek/templates/ templates/
+COPY .env.sample .env
+COPY start.sh .
+
+EXPOSE 8000
+RUN mkdir /opt/fotoboek-database
+
+CMD ["/bin/sh", "start.sh"]
