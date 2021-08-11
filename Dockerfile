@@ -2,8 +2,8 @@ FROM ubuntu as builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update
-RUN apt-get install -y build-essential curl \
+RUN apt-get update && apt-get install -y \
+    build-essential curl \
     libsqlite3-dev libopencv-dev \
     llvm-dev clang libclang-dev
 
@@ -32,7 +32,6 @@ COPY --from=builder /opt/fotoboek/templates/ templates/
 COPY .env.sample .env
 COPY start.sh .
 
-EXPOSE 8000
 RUN mkdir /opt/fotoboek-database
 
 CMD ["/bin/sh", "start.sh"]

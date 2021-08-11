@@ -24,9 +24,16 @@ pub async fn image_paths(db: Database) -> Json<Vec<ImagePath>> {
 }
 
 #[get("/api/tasks")]
-pub async fn tasks(db: Database) -> Json<Vec<Task>> {
+pub async fn get_tasks(db: Database) -> Json<Vec<Task>> {
     let tasks = db.run(move |conn| Task::all(conn)).await;
     Json(tasks)
+}
+
+#[post("/api/tasks?<image_id>")]
+pub async fn post_tasks_for_image_id(db: Database, image_id: i32) -> Result<(), String> {
+    let image: Image = db.run(move |conn| Image::by_id(conn, image_id)).await?;
+    crate::core::modules::create_tasks_on_new_image(&db, &image).await?;
+    Ok(())
 }
 
 #[derive(Serialize)]

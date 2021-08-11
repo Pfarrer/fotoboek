@@ -16,11 +16,8 @@ const SIZE_ZERO: Size = Size {
 pub async fn create_tasks_on_new_image(db: &Database, image: &Image) -> Result<(), String> {
     let image_id = image.id.expect("Image must have an id");
 
-    db.run(move |c| {
-        Task::new(image_id, MODULE_ID.into(), 200)
-            .insert(c)
-    })
-    .await?;
+    db.run(move |c| Task::new(image_id, MODULE_ID.into(), 200).insert(c))
+        .await?;
 
     Ok(())
 }
@@ -37,7 +34,7 @@ pub fn run_task(conn: &diesel::SqliteConnection, task: &Task) -> Result<(), Stri
             size: ImageSize::Large.to_string(),
             data,
         }
-        .insert(conn)?
+        .save(conn)?
     };
 
     {
@@ -50,7 +47,7 @@ pub fn run_task(conn: &diesel::SqliteConnection, task: &Task) -> Result<(), Stri
             size: ImageSize::Small.to_string(),
             data,
         }
-        .insert(conn)?;
+        .save(conn)?;
     };
 
     Ok(())

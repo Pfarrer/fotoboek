@@ -32,7 +32,7 @@ pub async fn image_by_id_and_size(
         RestImageSize::Small => ImageSize::Small,
     };
     let preview = db
-        .run(move |conn| Preview::by_image_id_and_size(&conn, id, image_size.to_string()))
+        .run(move |conn| Preview::by_image_id_and_size(&conn, id, &image_size.to_string()))
         .await
         .unwrap();
 
