@@ -1,11 +1,15 @@
+use gallery::DisplaySettings;
+use rocket::response::Redirect;
+
 mod api;
+mod gallery;
 mod images;
-mod ui;
 
 pub fn routes() -> Vec<rocket::Route> {
     routes![
-        ui::gallery,
-        ui::image_by_id,
+        index,
+        gallery::gallery,
+        gallery::image_by_id,
         images::image_by_id_and_original,
         images::image_by_id_and_size,
         api::images,
@@ -15,4 +19,13 @@ pub fn routes() -> Vec<rocket::Route> {
         api::image_paths,
         api::scan,
     ]
+}
+
+#[get("/")]
+fn index() -> Redirect {
+    let settings = DisplaySettings {
+        path: None,
+        deep: None,
+    };
+    Redirect::to(rocket::uri!(gallery::gallery(settings)))
 }

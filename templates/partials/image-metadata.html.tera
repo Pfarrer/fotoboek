@@ -1,7 +1,7 @@
 <div class="metadata">
     <strong>Original Image</strong>
     <div>
-        File Size: {{ image_metadata.file_size_bytes }}
+        File Size: {{ image_metadata.file_size_bytes | filesizeformat }}
     </div>
     <div>
         Resolution: {{ image_metadata.resolution_x }} x {{ image_metadata.resolution_y }}

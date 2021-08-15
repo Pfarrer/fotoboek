@@ -1,10 +1,31 @@
+:root {
+  --bg-color: #073b4c; /* Background */
+  --fg-color: #118ab2; /* Foreground */
+  --tx-color: #06d6a0; /* Text */
+  --hl-color: #ffd166; /* Highlight */
+  --dg-color: #ef476f; /* Danger */
+}
+
 body {
   padding: 0;
   margin: 0;
   text-align: center;
 
-  background-color: #5e5e5e;
-  color: white;
+  background-color: var(--bg-color);
+  color: var(--tx-color);
+  font-family: sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  color: var(--hl-color);
+}
+
+a {
+  color: var(--tx-color);
 }
 
 .gallery img {
