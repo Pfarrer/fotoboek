@@ -1,0 +1,36 @@
+{% extends "base" %}
+
+{% block body %}
+
+<img src="/images/{{ image_metadata.image_id }}?size=large" class="max-size">
+
+{% include "partials/image-metadata" %}
+
+<script>
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+
+      console.log('Escape pressed, back to gallery');
+      window.location.href = "{{ back_to_gallery_url | safe }}";
+      return false;
+    }
+
+{% if prev_image_url %}
+    if (e.key === 'ArrowLeft') {
+      console.log('ArrowLeft pressed, prev image or back to gallery');
+      window.location.href = "{{ prev_image_url | safe }}";
+    }
+{% endif %}
+
+{% if next_image_url %}
+    if (e.key === 'ArrowRight') {
+      console.log('ArrowRight pressed, next image or back to gallery');
+      window.location.href = "{{ next_image_url | safe }}";
+    }
+{% endif %}
+
+  });
+</script>
+{% endblock body %}
