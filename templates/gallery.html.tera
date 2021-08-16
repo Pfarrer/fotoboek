@@ -1,7 +1,17 @@
 {% extends "base" %}
 
 {% block body %}
-  <h1>{{ current_directory_name }}</h1>
+  <h1>Gallery</h1>
+
+  <div class="path">
+    <span>Path:</span>
+    {% for parent_dir in parent_dirs %}
+    <a href="{{ parent_dir.url }}">{{ parent_dir.name }}</a>
+    {% if loop.last == false %}
+    <span>/</span>
+    {% endif %}
+    {% endfor %}
+  </div>
 
   <p>
     Include Subfolders:
@@ -12,13 +22,11 @@
     {% endif %}
   </p>
 
-  <ul>
+  <div class="subfolders">
     {% for sub_dir in sub_dirs %}
-    <li>
-      <a href="{{ sub_dir.url }}">{{ sub_dir.name }}</a>
-    </li>
+    <a href="{{ sub_dir.url }}">{{ sub_dir.name }}</a>
     {% endfor %}
-  </ul>
+  </div>
 
   <div class="gallery">
     {% for image_meta in image_metadata %}

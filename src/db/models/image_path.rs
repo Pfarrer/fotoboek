@@ -35,24 +35,13 @@ impl ImagePath {
             .expect("Query image_paths failed")
     }
 
-    pub fn subdirs_of(
-        conn: &diesel::SqliteConnection,
-        by_parent_dir_path: Option<&str>,
-    ) -> Vec<String> {
-        match by_parent_dir_path {
-            Some(path) => image_paths
-                .select(abs_dir_path)
-                .distinct()
-                .filter(parent_dir_path.eq(path))
-                .load::<String>(conn)
-                .expect("Query image_paths failed"),
-            None => image_paths
-                .select(abs_dir_path)
-                .distinct()
-                .filter(parent_dir_path.is_null())
-                .load::<String>(conn)
-                .expect("Query image_paths failed"),
-        }
+    pub fn subdirs_of(conn: &diesel::SqliteConnection, by_parent_dir_path: &str) -> Vec<String> {
+        image_paths
+            .select(abs_dir_path)
+            .distinct()
+            .filter(parent_dir_path.eq(by_parent_dir_path))
+            .load::<String>(conn)
+            .expect("Query image_paths failed")
     }
 
     pub fn insert(self, conn: &diesel::SqliteConnection) -> Result<(), String> {

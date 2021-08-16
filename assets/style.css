@@ -28,6 +28,15 @@ a {
   color: var(--tx-color);
 }
 
+.subfolders a {
+  display: inline-block;
+  height: 200px;
+  width: 200px;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid var(--fg-color);
+}
+
 .gallery img {
   height: 200px;
   width: 200px;
