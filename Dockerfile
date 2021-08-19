@@ -1,34 +1,34 @@
-FROM ubuntu as builder
+FROM rust:bullseye as builder
 
-ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+    && apt-get install -y \
+        libsqlite3-dev libopencv-dev \
+        llvm-dev clang libclang-dev
 
-RUN apt-get update && apt-get install -y \
-    build-essential curl \
-    libsqlite3-dev libopencv-dev \
-    llvm-dev clang libclang-dev
-
-RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
-
-RUN cargo install diesel_cli --no-default-features --features "sqlite-bundled"
+RUN cargo install diesel_cli \
+    --no-default-features \
+    --features "sqlite"
 
 WORKDIR /opt/fotoboek
 COPY . .
-RUN cargo build --release
+RUN cargo install --path .
 
 
-FROM ubuntu
+FROM rust:slim-bullseye
 
-ARG DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update && apt-get install -y libsqlite3-0 libopencv-contrib4.2
+RUN apt-get update \
+    && apt-get install -y \
+        libsqlite3-0 libopencv-contrib4.5 \
+        libopencv-superres4.5 libopencv-videostab4.5 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/fotoboek
-COPY --from=builder /root/.cargo/bin/diesel .
-COPY --from=builder /opt/fotoboek/target/release/fotoboek .
-COPY --from=builder /opt/fotoboek/assets/ assets/
-COPY --from=builder /opt/fotoboek/migrations/ migrations/
-COPY --from=builder /opt/fotoboek/templates/ templates/
+
+COPY --from=builder /usr/local/cargo/bin/diesel .
+COPY --from=builder /usr/local/cargo/bin/fotoboek .
+COPY assets/ assets/
+COPY migrations/ migrations/
+COPY templates/ templates/
 COPY .env.sample .env
 COPY start.sh .
 
