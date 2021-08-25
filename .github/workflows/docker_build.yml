@@ -26,4 +26,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: Pfarrer/fotoboek:latest
+          tags: pfarrer/fotoboek:latest
