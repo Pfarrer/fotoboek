@@ -9,6 +9,11 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        arch: ["amd64", "arm64"]
+
     steps:
 
       - name: Checkout
@@ -19,9 +24,9 @@ jobs:
         with:
           path: /tmp/.buildx-cache
           # Key is named differently to avoid collision
-          key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
+          key: ${{ matrix.arch }}-multi-buildx-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-multi-buildx
+            ${{ matrix.arch }}-multi-buildx
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -40,7 +45,7 @@ jobs:
         with:
           context: .
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/${{ matrix.arch }}
           tags: pfarrer/fotoboek:latest
           # Note the mode=max here
           # More: https://github.com/moby/buildkit#--export-cache-options
