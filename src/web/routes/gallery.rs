@@ -1,3 +1,4 @@
+use crate::core::utils::abs_to_rel_path;
 use crate::db::models::*;
 use crate::db::Database;
 use rocket::http::uri::fmt::FromUriParam;
@@ -50,7 +51,7 @@ pub async fn gallery(settings: DisplaySettings<'_>, db: Database) -> Option<Temp
     let sub_dirs: Vec<TmplDirectory> = subdir_paths
         .iter()
         .map(|abs_path| abs_to_rel_path(abs_path))
-        .map(|rel_path| TmplDirectory::new(rel_path, &settings))
+        .map(|rel_path| TmplDirectory::new(rel_path.to_string(), &settings))
         .collect();
 
     let parent_dirs = get_parent_dirs(&settings);
@@ -61,6 +62,7 @@ pub async fn gallery(settings: DisplaySettings<'_>, db: Database) -> Option<Temp
         ..settings
     }))
     .to_string();
+
     let context = GalleryContext {
         image_metadata,
         gallery_image_urls: image_urls,
@@ -183,14 +185,6 @@ fn get_parent_dirs(settings: &DisplaySettings) -> Vec<TmplDirectory> {
     }
 
     dirs
-}
-
-fn abs_to_rel_path(abs_path: &String) -> String {
-    let image_root_string = dotenv::var("IMAGE_ROOT").unwrap();
-    let rel_path = Path::new(&abs_path)
-        .strip_prefix(image_root_string)
-        .unwrap();
-    rel_path.to_str().unwrap().to_string()
 }
 
 #[get("/gallery/<id>?<settings..>")]

@@ -44,6 +44,13 @@ impl ImagePath {
             .expect("Query image_paths failed")
     }
 
+    pub fn by_image_id(conn: &diesel::SqliteConnection, by_image_id: i32) -> ImagePath {
+        image_paths
+            .filter(image_id.eq(by_image_id).and(distance.eq(0)))
+            .first::<ImagePath>(conn)
+            .expect("Query image_paths failed")
+    }
+
     pub fn insert(self, conn: &diesel::SqliteConnection) -> Result<(), String> {
         diesel::insert_into(image_paths)
             .values(&self)

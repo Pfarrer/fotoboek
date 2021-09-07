@@ -23,6 +23,10 @@ pub struct Metadata {
 }
 
 impl Metadata {
+    pub fn effective_date(&self) -> &chrono::NaiveDateTime {
+        self.exif_date.as_ref().unwrap_or(&self.file_date)
+    }
+
     pub fn all(conn: &diesel::SqliteConnection) -> Vec<Metadata> {
         metadata.load::<Metadata>(conn).expect("Query all metadata")
     }
@@ -50,6 +54,23 @@ impl Metadata {
         )
         .bind::<diesel::sql_types::Text, _>(by_abs_dir_path)
         .bind::<diesel::sql_types::Integer, _>(max_distance)
+        .load(conn)
+        .expect("Query by_image_path_and_ordered")
+    }
+
+    pub fn by_day_and_month(
+        conn: &diesel::SqliteConnection,
+        day: i32,
+        month: i32,
+    ) -> Vec<Metadata> {
+        diesel::sql_query(
+            r#"
+                SELECT *
+                FROM metadata
+                WHERE strftime('%m-%d', COALESCE(exif_date, file_date)) = ?
+            "#,
+        )
+        .bind::<diesel::sql_types::Text, _>(format!("{:0>2}-{:0>2}", month, day))
         .load(conn)
         .expect("Query by_image_path_and_ordered")
     }

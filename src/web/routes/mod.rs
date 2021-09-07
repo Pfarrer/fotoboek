@@ -2,7 +2,8 @@ use gallery::DisplaySettings;
 use rocket::response::Redirect;
 
 mod api;
-mod gallery;
+mod flashback;
+pub mod gallery;
 mod images;
 
 pub fn routes() -> Vec<rocket::Route> {
@@ -10,6 +11,7 @@ pub fn routes() -> Vec<rocket::Route> {
         index,
         gallery::gallery,
         gallery::image_by_id,
+        flashback::flashback,
         images::image_by_id_and_original,
         images::image_by_id_and_size,
         api::images,

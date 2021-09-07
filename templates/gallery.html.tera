@@ -30,9 +30,7 @@
 
   <div class="gallery">
     {% for image_meta in image_metadata %}
-    <a href="{{ gallery_image_urls[image_meta.image_id] }}">
-        <img src="/images/{{ image_meta.image_id }}?size=small" />
-    </a>
+    <a href="{{ gallery_image_urls[image_meta.image_id] }}"><img src="/images/{{ image_meta.image_id }}?size=small" /></a>
     {% endfor %}
   </div>
 {% endblock body %}
