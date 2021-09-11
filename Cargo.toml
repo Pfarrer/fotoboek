@@ -31,3 +31,4 @@ features = ["tera"]
 
 [dev-dependencies]
 tempdir = "0.3"
+diesel_migrations = "^1.4.0"

@@ -9,11 +9,8 @@ pub const MODULE_ID: &str = "image_path";
 pub async fn create_tasks_on_new_image(db: &Database, image: &Image) -> Result<(), String> {
     let image_id = image.id.expect("Image must have an id");
 
-    db.run(move |c| {
-        Task::new(image_id, MODULE_ID.into(), 100)
-            .insert(c)
-    })
-    .await?;
+    db.run(move |c| Task::new(image_id, MODULE_ID.into(), 100).insert(c))
+        .await?;
 
     Ok(())
 }
@@ -42,7 +39,7 @@ pub fn run_task(conn: &diesel::SqliteConnection, task: &Task) -> Result<(), Stri
             distance: *i as i32,
             parent_dir_path,
         }
-        .insert(conn)?;
+        .save(conn)?;
 
         parent_dir_path = Some(path.to_str().unwrap().into());
     }

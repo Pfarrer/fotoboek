@@ -51,12 +51,13 @@ impl ImagePath {
             .expect("Query image_paths failed")
     }
 
-    pub fn insert(self, conn: &diesel::SqliteConnection) -> Result<(), String> {
-        diesel::insert_into(image_paths)
-            .values(&self)
-            .execute(conn)
-            .map_err(|err| err.to_string())?;
-
-        Ok(())
+    pub fn save(self, conn: &diesel::SqliteConnection) -> Result<(), String> {
+        conn.immediate_transaction(|| {
+            diesel::replace_into(image_paths)
+                .values(&self)
+                .execute(conn)?;
+            Ok(())
+        })
+        .map_err(|err: diesel::result::Error| err.to_string())
     }
 }

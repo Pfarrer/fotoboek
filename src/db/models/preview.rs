@@ -1,9 +1,4 @@
-// use diesel::sqlite::upsert::*;
-use diesel::{
-    self,
-    prelude::*,
-    result::{DatabaseErrorKind, Error},
-};
+use diesel::{self, prelude::*};
 use serde::Serialize;
 
 use crate::db::schema::previews;
@@ -32,45 +27,12 @@ impl Preview {
 
     pub fn save(self, conn: &diesel::SqliteConnection) -> Result<Preview, String> {
         conn.immediate_transaction(|| {
-            if self.id.is_none() {
-                self.insert(conn)
-            } else {
-                self.update(conn).map(|_| self)
-            }
-        })
-        .map_err(|err| err.to_string())
-    }
-    pub fn insert(self, conn: &diesel::SqliteConnection) -> Result<Preview, Error> {
-        let result = diesel::insert_into(dsl::previews)
-            .values(&self)
-            .execute(conn);
+            diesel::replace_into(dsl::previews)
+                .values(&self)
+                .execute(conn)?;
 
-        if let Err(error) = result {
-            if let Error::DatabaseError(db_err, _) = error {
-                match db_err {
-                    DatabaseErrorKind::UniqueViolation => {
-                        // Upsert
-                        let old_preview = Preview::by_image_id_and_size(conn, self.image_id, &self.size).expect("Find preview to upsert failed");
-                        let upsert_preview = Preview {
-                            id: old_preview.id,
-                            ..self
-                        };
-                        upsert_preview.update(conn)?;
-                        Ok(upsert_preview)
-                    },
-                    _ => Err(error),
-                }
-            } else {
-                Err(error)
-            }
-        } else {
-            // TODO select only the inserted ID instead of the full row including image blob
-            dsl::previews.order(dsl::id.desc()).first(conn)
-        }
-    }
-    pub fn update(&self, conn: &diesel::SqliteConnection) -> Result<usize, Error> {
-        diesel::update(dsl::previews.filter(dsl::id.eq(self.id)))
-            .set(self)
-            .execute(conn)
+            Ok(self)
+        })
+        .map_err(|err: diesel::result::Error| err.to_string())
     }
 }

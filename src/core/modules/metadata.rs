@@ -62,7 +62,7 @@ pub fn run_task(conn: &diesel::SqliteConnection, task: &Task) -> Result<(), Stri
         exif_gps_lat: exif_gps_lat_lon.map(|lat_lon| lat_lon.0),
         exif_gps_lon: exif_gps_lat_lon.map(|lat_lon| lat_lon.1),
     }
-    .insert(conn)?;
+    .save(conn)?;
 
     Ok(())
 }

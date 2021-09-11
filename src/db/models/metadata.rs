@@ -75,12 +75,11 @@ impl Metadata {
         .expect("Query by_image_path_and_ordered")
     }
 
-    pub fn insert(self, conn: &diesel::SqliteConnection) -> Result<(), String> {
-        diesel::insert_into(metadata)
-            .values(&self)
-            .execute(conn)
-            .map_err(|err| err.to_string())?;
-
-        Ok(())
+    pub fn save(self, conn: &diesel::SqliteConnection) -> Result<(), String> {
+        conn.immediate_transaction(|| {
+            diesel::replace_into(metadata).values(&self).execute(conn)?;
+            Ok(())
+        })
+        .map_err(|err: diesel::result::Error| err.to_string())
     }
 }
