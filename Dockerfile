@@ -20,6 +20,7 @@ RUN apt-get update \
     && apt-get install -y \
         libsqlite3-0 libopencv-contrib4.5 \
         libopencv-superres4.5 libopencv-videostab4.5 \
+        libopencv-stitching4.5 libopencv-shape4.5 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/fotoboek
