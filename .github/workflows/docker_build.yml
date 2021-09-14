@@ -12,7 +12,8 @@ jobs:
 
     strategy:
       matrix:
-        arch: ["amd64", "arm/v7"]
+        # "arm/v7" not working at the moment
+        arch: ["amd64"]
 
     steps:
       - name: Checkout

@@ -8,21 +8,30 @@ Fotoboek is a small service that indexes your images. It will prepare a thumbnai
 - Images are never changes or moved
 
 ## Open/Finished Tasks
-- [x] Index images recursively
-  - [x] Triggered by `GET /api/scan`
-  - [ ] On startup
-  - [ ] Watch for filesystem events (inotify)
-- [ ] Detect removed images
-- [x] Create image "jobs" when new image is found
+- Image Indexing
+  - [x] Index JPG images recursively
+  - [x] Trigger index by `GET /api/scan`
+  - [ ] Trigger index on startup
+  - [ ] Trigger index on filesystem events (inotify)
+  - [ ] Detect removed images
+- User Interface & Features
+  - [x] Basic Gallery
+  - [x] Recursive view in Gallery
+  - [x] Basic Flashback
+  - [ ] Make it pretty
+- Worker Framework
+  - [x] Create image "jobs" when new image is found
   - [x] Lock jobs when worker started working on it
-- [x] Generic worker process to handle image jobs
+  - [x] Generic worker process to handle image jobs
   - [x] Concurrent worker processes
   - [x] Worker process sleep when no jobs available
   - [ ] Notify workers on new jobs
-- [x] Extract EXIF data from images
-- [x] Generate thumbnail and preview images
-- [x] Parse image path and allow recursive image gallery
-- [ ] Override image date/order
+- Image Metadata 
+  - [x] Extract EXIF data from images
+  - [x] Parse image path and allow recursive image gallery
+  - [ ] Allow manual override of image date/order
+- Image Preview
+  - [x] Generate thumbnail and preview images for JPGs
 
 ## Compile
 See Opencv prerequisites: https://github.com/twistedfall/opencv-rust
