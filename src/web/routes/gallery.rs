@@ -44,14 +44,25 @@ pub async fn gallery(settings: DisplaySettings<'_>, db: Database) -> Option<Temp
         },
         |path| Some(path),
     )?;
-    let subdir_paths = db
-        .run(move |conn| ImagePath::subdirs_of(conn, &&abs_dir_path))
-        .await;
 
-    let sub_dirs: Vec<TmplDirectory> = subdir_paths
+    let rel_subdir_paths_and_preview_image_ids: Vec<(String, Option<i32>)> = db
+        .run(move |conn| {
+            ImagePath::subdirs_of(conn, &&abs_dir_path)
+                .iter()
+                .map(|abs_subdir_path| {
+                    let rel_subdir_path = abs_to_rel_path(abs_subdir_path);
+                    let preview_image_id =
+                        ImagePath::preview_image_id_for_abs_path(conn, abs_subdir_path);
+                    (rel_subdir_path.to_string(), preview_image_id)
+                })
+                .collect()
+        })
+        .await;
+    let sub_dirs: Vec<TmplDirectory> = rel_subdir_paths_and_preview_image_ids
         .iter()
-        .map(|abs_path| abs_to_rel_path(abs_path))
-        .map(|rel_path| TmplDirectory::new(rel_path.to_string(), &settings))
+        .map(|(rel_subdir_path, preview_image_id)| {
+            TmplDirectory::new(rel_subdir_path.to_string(), *preview_image_id, &settings)
+        })
         .collect();
 
     let parent_dirs = get_parent_dirs(&settings);
@@ -88,24 +99,32 @@ struct GalleryContext {
 #[derive(Serialize)]
 struct TmplDirectory {
     name: String,
+    preview_image_id: Option<i32>,
     url: String,
 }
 
 impl<'a> TmplDirectory {
-    fn new(abs_path: String, settings: &DisplaySettings<'_>) -> TmplDirectory {
+    fn new(
+        abs_path: String,
+        preview_image_id: Option<i32>,
+        settings: &DisplaySettings<'_>,
+    ) -> TmplDirectory {
         let name = Path::new(&&abs_path)
             .file_name()
             .map(|os_str| os_str.to_str())
             .flatten()
             .unwrap_or("Start")
             .to_owned();
+        let url = rocket::uri!(gallery(DisplaySettings {
+            path: Some(&&abs_path),
+            ..*settings
+        }))
+        .to_string();
+
         TmplDirectory {
             name,
-            url: rocket::uri!(gallery(DisplaySettings {
-                path: Some(&&abs_path),
-                ..*settings
-            }))
-            .to_string(),
+            preview_image_id,
+            url,
         }
     }
 }
@@ -159,6 +178,7 @@ fn get_parent_dirs(settings: &DisplaySettings) -> Vec<TmplDirectory> {
 
     let mut dirs = vec![TmplDirectory {
         name: "Start".to_string(),
+        preview_image_id: None,
         url: rocket::uri!(gallery(DisplaySettings {
             path: Some(""),
             ..*settings
@@ -180,7 +200,7 @@ fn get_parent_dirs(settings: &DisplaySettings) -> Vec<TmplDirectory> {
     for path in path_elements {
         previous_path_elements.push(path);
 
-        let dir = TmplDirectory::new(previous_path_elements.join(&path_sep), &settings);
+        let dir = TmplDirectory::new(previous_path_elements.join(&path_sep), None, &settings);
         dirs.push(dir);
     }
 

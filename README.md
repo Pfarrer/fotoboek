@@ -8,14 +8,17 @@ Fotoboek is a small service that indexes your images. It will prepare a thumbnai
 - Images are never changes or moved
 
 ## Open/Finished Tasks
-- Image Indexing
-  - [x] Index JPG images recursively
+- JPG Image Indexing
+  - [x] Index images recursively
   - [x] Trigger index by `GET /api/scan`
   - [ ] Trigger index on startup
   - [ ] Trigger index on filesystem events (inotify)
   - [ ] Detect removed images
+- Video Indexing
+  - [ ] Index videos recursively
 - User Interface & Features
   - [x] Basic Gallery
+    - [ ] Preview image for folders
   - [x] Recursive view in Gallery
   - [x] Basic Flashback
   - [ ] Make it pretty

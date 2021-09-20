@@ -51,6 +51,20 @@ impl ImagePath {
             .expect("Query image_paths failed")
     }
 
+    pub fn preview_image_id_for_abs_path(
+        conn: &diesel::SqliteConnection,
+        by_abs_dir_path: &str,
+    ) -> Option<i32> {
+        image_paths
+            .select(image_id)
+            .filter(abs_dir_path.eq(by_abs_dir_path).and(distance.eq(0)))
+            .limit(1)
+            .load::<i32>(conn)
+            .expect("Query preview_image_id failed")
+            .first()
+            .map(|id| *id)
+    }
+
     pub fn save(self, conn: &diesel::SqliteConnection) -> Result<(), String> {
         conn.immediate_transaction(|| {
             diesel::replace_into(image_paths)

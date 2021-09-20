@@ -24,7 +24,12 @@
 
   <div class="subfolders">
     {% for sub_dir in sub_dirs %}
-    <a href="{{ sub_dir.url }}">{{ sub_dir.name }}</a>
+    <a href="{{ sub_dir.url }}">
+    {% if sub_dir.preview_image_id %}
+    <img src="/images/{{ sub_dir.preview_image_id }}?size=small" />
+    {% endif %}
+    <span class="name">{{ sub_dir.name }}</span>
+    </a>
     {% endfor %}
   </div>
 

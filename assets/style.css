@@ -29,12 +29,28 @@ a {
 }
 
 .subfolders a {
+  position: relative;
   display: inline-block;
   height: 200px;
   width: 200px;
   text-align: center;
   vertical-align: middle;
   border: 1px solid var(--fg-color);
+}
+.subfolders img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  left: 0;
+}
+.subfolders .name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgb(7, 59, 76) 80%);
+  padding-top: 1em;
 }
 
 .gallery img {
