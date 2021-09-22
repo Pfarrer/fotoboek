@@ -18,7 +18,7 @@ Fotoboek is a small service that indexes your images. It will prepare a thumbnai
   - [ ] Index videos recursively
 - User Interface & Features
   - [x] Basic Gallery
-    - [ ] Preview image for folders
+  - [x] Preview image for folders
   - [x] Recursive view in Gallery
   - [x] Basic Flashback
   - [ ] Make it pretty
