@@ -20,9 +20,11 @@
     {% else %}
       <a href="{{ toggle_deep_url }}">On</a> / Off
     {% endif %}
+    -
+    <a href="{{ edit_url }}">Edit Images</a>
   </p>
 
-  <div class="subfolders">
+  <p class="subfolders">
     {% for sub_dir in sub_dirs %}
     <a href="{{ sub_dir.url }}">
     {% if sub_dir.preview_image_id %}
@@ -31,7 +33,7 @@
     <span class="name">{{ sub_dir.name }}</span>
     </a>
     {% endfor %}
-  </div>
+  </p>
 
   <div class="gallery">
     {% for image_meta in image_metadata %}

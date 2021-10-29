@@ -9,7 +9,9 @@ mod images;
 pub fn routes() -> Vec<rocket::Route> {
     routes![
         index,
-        gallery::gallery,
+        gallery::view,
+        gallery::edit,
+        gallery::edit_submit,
         gallery::image_by_id,
         flashback::flashback,
         images::image_by_id_and_original,
@@ -29,5 +31,5 @@ fn index() -> Redirect {
         path: None,
         deep: None,
     };
-    Redirect::to(rocket::uri!(gallery::gallery(settings)))
+    Redirect::to(rocket::uri!(gallery::view(settings)))
 }

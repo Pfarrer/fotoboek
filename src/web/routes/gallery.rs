@@ -1,8 +1,12 @@
+use crate::core::image_description;
 use crate::core::utils::abs_to_rel_path;
 use crate::db::models::*;
 use crate::db::Database;
+use rocket::form::Form;
+use rocket::futures::stream::{self, StreamExt};
 use rocket::http::uri::fmt::FromUriParam;
 use rocket::http::uri::fmt::Query;
+use rocket::response::Redirect;
 use rocket_dyn_templates::Template;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -24,7 +28,7 @@ impl<'a> FromUriParam<Query, (Option<&'a str>, Option<bool>)> for DisplaySetting
 }
 
 #[get("/gallery?<settings..>")]
-pub async fn gallery(settings: DisplaySettings<'_>, db: Database) -> Option<Template> {
+pub async fn view(settings: DisplaySettings<'_>, db: Database) -> Option<Template> {
     let image_metadata = get_image_metadata_for(&db, &settings).await;
     let image_urls: HashMap<i32, String> = image_metadata
         .iter()
@@ -68,32 +72,35 @@ pub async fn gallery(settings: DisplaySettings<'_>, db: Database) -> Option<Temp
     let parent_dirs = get_parent_dirs(&settings);
 
     let is_deep = settings.deep.unwrap_or(false);
-    let toggle_deep_url = rocket::uri!(gallery(DisplaySettings {
+    let toggle_deep_url = rocket::uri!(view(DisplaySettings {
         deep: Some(!is_deep),
         ..settings
     }))
     .to_string();
+    let edit_url = rocket::uri!(edit(settings)).to_string();
 
-    let context = GalleryContext {
+    let context = ViewContext {
         image_metadata,
         gallery_image_urls: image_urls,
         sub_dirs,
         parent_dirs,
         is_deep,
         toggle_deep_url,
+        edit_url,
     };
 
-    Some(Template::render("gallery", context))
+    Some(Template::render("gallery/view", context))
 }
 
 #[derive(Serialize)]
-struct GalleryContext {
+struct ViewContext {
     image_metadata: Vec<Metadata>,
     gallery_image_urls: HashMap<i32, String>,
     sub_dirs: Vec<TmplDirectory>,
     parent_dirs: Vec<TmplDirectory>,
     is_deep: bool,
     toggle_deep_url: String,
+    edit_url: String,
 }
 
 #[derive(Serialize)]
@@ -115,7 +122,7 @@ impl<'a> TmplDirectory {
             .flatten()
             .unwrap_or("Start")
             .to_owned();
-        let url = rocket::uri!(gallery(DisplaySettings {
+        let url = rocket::uri!(view(DisplaySettings {
             path: Some(&&abs_path),
             ..*settings
         }))
@@ -179,7 +186,7 @@ fn get_parent_dirs(settings: &DisplaySettings) -> Vec<TmplDirectory> {
     let mut dirs = vec![TmplDirectory {
         name: "Start".to_string(),
         preview_image_id: None,
-        url: rocket::uri!(gallery(DisplaySettings {
+        url: rocket::uri!(view(DisplaySettings {
             path: Some(""),
             ..*settings
         }))
@@ -212,18 +219,21 @@ pub async fn image_by_id(id: i32, settings: DisplaySettings<'_>, db: Database) -
     let gallery_metadata = get_image_metadata_for(&db, &settings).await;
     let (prev_image_metadata, this_image_metadata, next_image_metadata) =
         find_image_metadata_and_neighbors(&gallery_metadata, id)?;
+    let image_description = image_description::get_for_image_id(id, &db).await;
 
     #[derive(Serialize)]
     struct Context<'a> {
         image_metadata: &'a Metadata,
+        image_description: Option<String>,
         prev_image_url: Option<String>,
         next_image_url: Option<String>,
         back_to_gallery_url: String,
     }
 
-    let back_to_gallery_url = rocket::uri!(gallery(settings)).to_string();
+    let back_to_gallery_url = rocket::uri!(view(settings)).to_string();
     let context = Context {
         image_metadata: this_image_metadata,
+        image_description,
         prev_image_url: prev_image_metadata
             .map(|m| rocket::uri!(image_by_id(m.image_id, settings)).to_string())
             .or(Some(back_to_gallery_url.clone())),
@@ -233,7 +243,7 @@ pub async fn image_by_id(id: i32, settings: DisplaySettings<'_>, db: Database) -
         back_to_gallery_url,
     };
 
-    Some(Template::render("image", context))
+    Some(Template::render("gallery/image", context))
 }
 
 fn find_image_metadata_and_neighbors<'a>(
@@ -249,6 +259,61 @@ fn find_image_metadata_and_neighbors<'a>(
     };
 
     Some((prev, metadata.get(index).unwrap(), metadata.get(index + 1)))
+}
+
+#[get("/gallery/edit?<settings..>")]
+pub async fn edit(settings: DisplaySettings<'_>, db: Database) -> Option<Template> {
+    let image_metadata = get_image_metadata_for(&db, &settings).await;
+
+    let db_ref = &db;
+    let image_descriptions: HashMap<i32, String> = stream::iter(image_metadata.iter())
+        .then(|image_meta| async move {
+            let description = image_description::get_for_image_id(image_meta.image_id, db_ref)
+                .await
+                .unwrap_or("".to_string());
+
+            (image_meta.image_id, description)
+        })
+        .collect::<HashMap<i32, String>>()
+        .await;
+
+    let submit_url = rocket::uri!(edit_submit(settings)).to_string();
+
+    #[derive(Serialize, Debug)]
+    struct EditContext {
+        image_metadata: Vec<Metadata>,
+        image_descriptions: HashMap<i32, String>,
+        submit_url: String,
+    }
+
+    let context = EditContext {
+        image_metadata,
+        image_descriptions,
+        submit_url,
+    };
+    println!("{:?}", context);
+
+    Some(Template::render("gallery/edit", context))
+}
+
+#[post("/gallery/edit?<settings..>", data = "<form>")]
+pub async fn edit_submit(
+    settings: DisplaySettings<'_>,
+    form: Form<EditForm>,
+    db: Database,
+) -> Redirect {
+    for (key, value) in &form.description {
+        image_description::set_for_image_id(*key, &value, &db)
+            .await
+            .expect("Writing image description failed");
+    }
+
+    Redirect::to(rocket::uri!(view(settings)))
+}
+
+#[derive(FromForm, Debug)]
+pub struct EditForm {
+    description: HashMap<i32, String>,
 }
 
 #[cfg(test)]

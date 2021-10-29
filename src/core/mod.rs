@@ -1,3 +1,4 @@
+pub mod image_description;
 pub mod image_event_handler;
 pub mod models;
 pub mod modules;

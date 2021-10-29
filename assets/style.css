@@ -28,6 +28,17 @@ a {
   color: var(--tx-color);
 }
 
+table.sticky-header-footer thead,
+table.sticky-header-footer tfoot {
+  position: sticky;
+}
+table.sticky-header-footer thead {
+  inset-block-start: 0; /* "top" */
+}
+table.sticky-header-footer tfoot {
+  inset-block-end: 0; /* "bottom" */
+}
+
 .subfolders a {
   position: relative;
   display: inline-block;
@@ -63,4 +74,23 @@ img.max-size {
   height: 100vh;
   width: 100vw;
   object-fit: contain;
+}
+.description {
+  position: absolute;
+  display: block;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgb(7, 59, 76) 80%);
+  padding: 0.5em 0;
+}
+
+table.gallery-edit {
+  width: 100%;
+}
+table.gallery-edit thead td,
+table.gallery-edit tfoot td {
+  font-weight: bold;
+  padding: 1em;
+  background-color: var(--fg-color);
 }

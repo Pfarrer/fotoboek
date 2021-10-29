@@ -1,11 +1,11 @@
 # Fotoboek
-Fotoboek is a small service that indexes your images. It will prepare a thumbnail and preview for each image, extract metadata (EXIF mostly) and image paths. With this, you can browse your photos by (recursive) image path, date or, geographic location.
+Fotoboek is a service that indexes your image gallery optimized for viewing many images in nested folders. It will prepare a thumbnail and preview for each image, extract metadata (EXIF mostly) and image paths. With this, you can browse your photos by (recursive) image path, date or, geographic location.
 
 ## Core Features
 - Show images in chronological order (not filename based)
 - Allow recursive image galleries spanning any number of sub-folders
 - Pre-calculate preview images as early as possible
-- Images are never changes or moved
+- Images are never changed or moved
 
 ## Open/Finished Tasks
 - JPG Image Indexing
@@ -21,6 +21,7 @@ Fotoboek is a small service that indexes your images. It will prepare a thumbnai
   - [x] Preview image for folders
   - [x] Recursive view in Gallery
   - [x] Basic Flashback
+  - [ ] Edit all images in a folder (date, comments)
   - [ ] Make it pretty
 - Worker Framework
   - [x] Create image "jobs" when new image is found

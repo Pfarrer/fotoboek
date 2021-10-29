@@ -4,6 +4,10 @@
 
 <img src="/images/{{ image_metadata.image_id }}?size=large" class="max-size">
 
+{% if image_description %}
+<span class="description">{{ image_description }}</span>
+{% endif %}
+
 {% include "partials/image-metadata" %}
 
 <script>
