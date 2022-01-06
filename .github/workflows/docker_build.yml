@@ -9,13 +9,6 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
-    name: Docker Build & Push for ${{ matrix.architecture }}
-
-#    strategy:
-#      matrix:
-#        architecture:
-#          - linux/arm64
-#          - linux/arm/v7
 
     steps:
       - name: Set Swap Space
@@ -29,7 +22,7 @@ jobs:
           sudo systemctl restart docker
 
       - name: Free Disk Space script
-        run: sh ${GITHUB_WORKSPACE}/.github/free_disk_space.sh
+        run: sh .github/free_disk_space.sh
 
       - name: Checkout
         uses: actions/checkout@v2
