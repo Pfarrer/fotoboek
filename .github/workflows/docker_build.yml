@@ -31,9 +31,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Free Disk Space script
-        shell: bash
-        run: ${GITHUB_WORKSPACE}/.github/free_disk_space.sh
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 512
+          swap-size-mb: 4096
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
