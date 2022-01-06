@@ -54,6 +54,7 @@ jobs:
         id: cache
         with:
           path: /tmp/.buildx-cache
+          key: buildx-cache
 
       - name: Login to DockerHub
         uses: docker/login-action@v1
