@@ -31,6 +31,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Free Disk Space script
+        shell: bash
+        run: ${GITHUB_WORKSPACE}/.github/free_disk_space.sh
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
         with:
