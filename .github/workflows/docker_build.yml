@@ -44,4 +44,4 @@ jobs:
       - name: Buildx and Push
         run: |
           pwd
-          docker buildx build --platform linux/amd64,linux/arm/v7 --push -t pfarrer/fotoboek:latest .
+          docker buildx build --platform linux/amd64,linux/arm/v7 --push --no-cache -t pfarrer/fotoboek:latest .
