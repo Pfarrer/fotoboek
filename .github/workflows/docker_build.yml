@@ -11,16 +11,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set Swap Space
-        uses: pierotofy/set-swap-space@v1.0
-        with:
-          swap-size-gb: 10
-      - run: |
-          # Workaround for https://github.com/rust-lang/cargo/issues/8719
-          sudo mkdir -p /var/lib/docker
-          sudo mount -t tmpfs -o size=10G none /var/lib/docker
-          sudo systemctl restart docker
-
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -34,6 +24,7 @@ jobs:
           image: tonistiigi/binfmt:latest
 
       - name: Set up Docker Buildx
+        id: buildx
         uses: docker/setup-buildx-action@v1
       - name: Login to DockerHub
         uses: docker/login-action@v1
@@ -41,7 +32,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Buildx and Push
-        run: |
-          pwd
-          docker buildx build --platform linux/amd64,linux/arm/v7 --push --no-cache -t pfarrer/fotoboek:latest .
+      - name: Build and Push
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm/v7
+          push: true
+          tags: pfarrer/fotoboek:latest,pfarrer/fotoboek:0.5.0
