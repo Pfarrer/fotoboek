@@ -2,5 +2,6 @@
 .idea/
 .vscode/
 .env
-fotoboek.sqlite*
+_fotoboek.sqlite*
+_dev-file-storage/
 .DS_Store

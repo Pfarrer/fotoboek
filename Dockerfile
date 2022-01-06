@@ -1,20 +1,22 @@
-FROM rust:bullseye as builder
+FROM rust:bullseye AS rust-builder
 
 RUN apt-get update \
     && apt-get install -y \
         libsqlite3-dev libopencv-dev \
         llvm-dev clang libclang-dev
 
-RUN cargo install diesel_cli \
-    --no-default-features \
-    --features "sqlite"
-
 WORKDIR /opt/fotoboek
 COPY . .
-RUN cargo install --path .
+RUN cargo build --release
 
+FROM node:lts AS angular-builder
 
-FROM rust:slim-bullseye
+WORKDIR /opt/webapp
+COPY webapp/ .
+RUN npm install
+RUN npm run build
+
+FROM rust:slim-bullseye as runtime
 
 RUN apt-get update \
     && apt-get install -y \
@@ -25,14 +27,14 @@ RUN apt-get update \
 
 WORKDIR /opt/fotoboek
 
-COPY --from=builder /usr/local/cargo/bin/diesel .
-COPY --from=builder /usr/local/cargo/bin/fotoboek .
-COPY assets/ assets/
-COPY migrations/ migrations/
-COPY templates/ templates/
+COPY --from=rust-builder /opt/fotoboek/target/release/app .
+COPY --from=angular-builder /opt/webapp/dist/webapp/ webapp/
+#COPY migrations/ migrations/
+#COPY templates/ templates/
 COPY .env.sample .env
-COPY start.sh .
 
+RUN mkdir /opt/media-source
 RUN mkdir /opt/fotoboek-database
+RUN mkdir /opt/fotoboek-storage
 
-CMD ["/bin/sh", "start.sh"]
+CMD ["/opt/fotoboek/app"]

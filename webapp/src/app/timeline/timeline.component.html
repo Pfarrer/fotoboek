@@ -1,0 +1,7 @@
+<app-day-section
+  *ngFor="let date of timelineDates; let i = index"
+  (imageClick)="onImageClick($event)"
+  [date]="date"
+  [imageIds]="dateImageIds[date]"
+  [attr.data-index]="i"
+></app-day-section>

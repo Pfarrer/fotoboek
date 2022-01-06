@@ -1,0 +1,17 @@
+mat-toolbar {
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  a {
+    text-decoration: none;
+    font-weight: normal;
+    white-space: normal;
+    color: white;
+    padding-left: 1em;
+
+    mat-icon {
+      vertical-align: middle;
+    }
+  }
+}

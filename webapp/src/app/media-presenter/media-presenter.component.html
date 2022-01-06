@@ -1,0 +1,10 @@
+<div
+  *ngIf="slide"
+  (window:keydown.arrowLeft)="gotoPreviousSlide()"
+  (window:keydown.arrowRight)="gotoNextSlide()"
+  (window:keydown.esc)="onBackdropClick()"
+  (click)="onBackdropClick()"
+  class="media-presenter"
+>
+  <img src="{{ imageUrl() }}">
+</div>

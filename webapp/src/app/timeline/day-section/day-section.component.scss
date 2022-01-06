@@ -1,0 +1,51 @@
+:host {
+  display: flex;
+  flex-wrap: wrap;
+
+  position: relative;
+  margin-left: 50px;
+}
+
+.date-wrapper {
+  position: absolute;
+  left: -50px;
+  top: 0;
+  bottom: 0;
+  width: 50px;
+
+  .date {
+    position: absolute;
+    transform: rotate(-90deg);
+    top: 6em;
+    left: -2em;
+    background: white;
+    padding: 0em 1em;
+    font-weight: bold;
+    font-size: 110%;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    width: 6px;
+    background-color: lightgray;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    margin-left: -3px;
+    border: 1px solid #e5e5e5;
+    border-top: 0;
+    border-bottom: 0;
+  }
+}
+
+img {
+  height: 200px;
+  width: 200px;
+  object-fit: cover;
+  cursor: pointer;
+  flex-grow: 1;
+}
+.empty-space {
+  flex-grow: 10;
+}

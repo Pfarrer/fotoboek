@@ -1,0 +1,21 @@
+[package]
+name = "logic"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+shared = { path = "../shared" }
+persistance = { path = "../persistance" }
+
+tokio = "1.6.1" # must be same as tokio version used in rocket lib (see app module)
+futures = "0.3.0" # must be same as tokio version used in rocket lib (see app module)
+chrono = { version = "0.4.19", features = ["serde"] }
+opencv = "0.53"
+rexif = "0.7.3"
+latlon = "0.1.3"
+log = "0.4"
+glob = "0.3.0"
+sha256 = "1.0.3"
+
+[dev-dependencies]
+tempdir = "0.3"

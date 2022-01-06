@@ -1,5 +1,6 @@
 Dockerfile
 /target/
 .github/
-fotoboek.sqlite*
+_fotoboek.sqlite*
+_file-storage
 .idea/

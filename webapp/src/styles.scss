@@ -1,0 +1,17 @@
+@import "~materialize-css/sass/materialize";
+
+.fade-in {
+  animation-name: fadeIn;
+  animation-duration: 300ms;
+  animation-delay: 200ms;
+  animation-timing-function: cubic-bezier(0, 0, 0.4, 1);
+  animation-fill-mode: forwards;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

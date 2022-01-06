@@ -1,0 +1,12 @@
+<div class="date-wrapper">
+  <span class="date">{{ date }}</span>
+</div>
+<ng-container *ngIf="isSectionVisible">
+  <img
+    *ngFor="let imageId of imageIds"
+    (click)="imageClick.emit(imageId)"
+    src="/api/images/{{ imageId }}?size=small"
+    class="fade-in"
+  />
+  <div class="empty-space"></div>
+</ng-container>
