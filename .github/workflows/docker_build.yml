@@ -60,3 +60,10 @@ jobs:
           platforms: linux/amd64,linux/arm/v7
           push: true
           tags: pfarrer/fotoboek:latest,pfarrer/fotoboek:${{ steps.tag_version.outputs.new_version }}
+      
+      - name: Update DockerHub Description
+        uses: peter-evans/dockerhub-description@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: pfarrer/fotoboek
