@@ -45,6 +45,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and Push
         uses: docker/build-push-action@v2
         with:
@@ -53,4 +59,4 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm/v7
           push: true
-          tags: pfarrer/fotoboek:latest,pfarrer/fotoboek:0.5.0
+          tags: pfarrer/fotoboek:latest,pfarrer/fotoboek:${{ steps.tag_version.outputs.new_version }}
