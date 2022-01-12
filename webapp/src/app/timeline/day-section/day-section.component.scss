@@ -44,8 +44,6 @@ img {
   width: 200px;
   object-fit: cover;
   cursor: pointer;
-  flex-grow: 1;
-}
-.empty-space {
-  flex-grow: 10;
+  flex-grow: 0;
+  margin: 0.1em;
 }
