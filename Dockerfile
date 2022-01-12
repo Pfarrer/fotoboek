@@ -39,8 +39,6 @@ WORKDIR /opt/fotoboek
 
 COPY --from=rust-builder /opt/fotoboek/target/release/app .
 COPY --from=angular-builder /opt/webapp/dist/webapp/ webapp/
-#COPY migrations/ migrations/
-#COPY templates/ templates/
 COPY .env.sample .env
 
 RUN mkdir /opt/media-source
