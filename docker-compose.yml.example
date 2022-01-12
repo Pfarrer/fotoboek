@@ -1,0 +1,14 @@
+version: '3'
+services:
+  fotoboek:
+    container_name: fotoboek
+    image: pfarrer/fotoboek
+    ports:
+      - 1223:1223
+    volumes:
+      - {path-to-your-image-base-directory}:/opt/media-source
+      - fotoboek-storage:/opt/fotoboek-storage
+    restart: unless-stopped
+
+volumes:
+  fotoboek-storage:
