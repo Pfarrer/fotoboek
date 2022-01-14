@@ -6,7 +6,7 @@ services:
     ports:
       - 1223:1223
     volumes:
-      - {path-to-your-image-base-directory}:/opt/media-source
+      - {path-to-your-media-base-directory}:/opt/media-source
       - fotoboek-storage:/opt/fotoboek-storage
     restart: unless-stopped
 

@@ -1,6 +1,30 @@
 # Fotoboek
 Fotoboek is a service that indexes your image gallery optimized for viewing many images in nested folders. It will prepare a thumbnail and preview for each image, extract metadata (EXIF mostly) and image paths. With this, you can browse your photos by (recursive) image path, date or, geographic location.
 
+
+## Run it yourself
+The simplest method to run Fotoboek is by using Docker:
+```yml
+version: '3'
+services:
+  fotoboek:
+    container_name: fotoboek
+    image: pfarrer/fotoboek
+    ports:
+      - 1223:1223
+    volumes:
+      - {path-to-your-media-base-directory}:/opt/media-source
+      - fotoboek-storage:/opt/fotoboek-storage
+    restart: unless-stopped
+
+volumes:
+  fotoboek-storage:
+```
+
+Make sure to replace `{path-to-your-media-base-directory}` with your local path
+to the base directory containing your media files.
+
+
 ## Core Features
 - Show images in chronological order (not filename based)
 - Allow recursive image galleries spanning any number of sub-folders
