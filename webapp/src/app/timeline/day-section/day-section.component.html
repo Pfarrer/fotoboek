@@ -6,6 +6,6 @@
     *ngFor="let imageId of imageIds"
     (click)="imageClick.emit(imageId)"
     src="/api/images/{{ imageId }}?size=small"
-    class="fade-in"
+    class="preview fade-in"
   />
 </ng-container>

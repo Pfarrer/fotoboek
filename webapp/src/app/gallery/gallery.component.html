@@ -1,27 +1,39 @@
 <div class="row">
   <div class="col s12">
-    <nav>
-      <div class="nav-wrapper">
-        <div class="col s12">
-          <a href="#!" class="breadcrumb">First</a>
-          <a href="#!" class="breadcrumb">Second</a>
-          <a href="#!" class="breadcrumb">Third</a>
-        </div>
-      </div>
-    </nav>
-  </div>
-</div>
+    
+    <table *ngIf="current_path" class="highlight">
+      <tbody>
+        <tr
+        *ngFor="let subPath of current_path.sub_paths | keys"
+        (click)="onDirectoryClick(current_path.sub_paths[subPath])"
+        >
+          <td>DIR</td>
+          <td class="directory-previews">
+            <div *ngFor="let preview_image_id of preview_images(current_path.sub_paths[subPath])"
+              class="image-wrapper">
+              <img src="/api/images/{{ preview_image_id }}?size=small"
+                  class="fade-in" />
+            </div>
+          </td>
+          <td>{{ subPath }}</td>
+          <td>
+            {{ current_path.sub_paths[subPath].files.length }} files and
+            {{ (current_path.sub_paths[subPath].sub_paths | keys).length }} sub folders
+          </td>
+        </tr>
+        <tr
+          *ngFor="let file of current_path.files"
+          (click)="onFileClick(file)"
+        >
+          <td>{{ file.file_type }}</td>
+          <td class="file-preview">
+            <img src="/api/images/{{ file.id }}?size=small" class="fade-in" />
+          </td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
 
-<div *ngIf="paths" class="row sub-paths">
-  <div class="col s4 m3">
-    <div *ngFor="let subPath of paths.sub_paths | keys" class="card small">
-      <div class="card-image">
-        <img src="/api/images/{{ paths.sub_paths[subPath].preview_image_id }}?size=small" class="fade-in" />
-        <span class="card-title">{{ subPath }}</span>
-      </div>
-      <div class="card-content">
-        {{ paths.sub_paths[subPath].files.length }} files and {{ (paths.sub_paths[subPath].sub_paths | keys).length }} sub folders.
-      </div>
-    </div>
-  </div>
+</div>
 </div>
