@@ -7,7 +7,9 @@
         *ngFor="let subPath of current_path.sub_paths | keys"
         (click)="onDirectoryClick(current_path.sub_paths[subPath])"
         >
-          <td>DIR</td>
+          <td>
+            <i class="material-icons">perm_media</i>
+          </td>
           <td class="directory-previews">
             <div *ngFor="let preview_image_id of preview_images(current_path.sub_paths[subPath])"
               class="image-wrapper">
@@ -25,7 +27,9 @@
           *ngFor="let file of current_path.files"
           (click)="onFileClick(file)"
         >
-          <td>{{ file.file_type }}</td>
+          <td>
+            <i class="material-icons">file-image-outline</i>
+          </td>
           <td class="file-preview">
             <img src="/api/images/{{ file.id }}?size=small" class="fade-in" />
           </td>
