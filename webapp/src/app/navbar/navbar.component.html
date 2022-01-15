@@ -1,10 +1,10 @@
 <div class="navbar-fixed">
   <nav>
     <div class="nav-wrapper">
-      <a href="#/" class="brand-logo">Fotoboek</a>
+      <a routerLink="/" class="brand-logo">Fotoboek</a>
       <a href="#" data-target="nav-slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
       <ul class="right hide-on-med-and-down">
-        <li *ngFor="let item of navLinks">
+        <li *ngFor="let item of navLinks" routerLinkActive="active">
           <a [routerLink]="item.url">
             <i class="material-icons left" data-position="bottom">{{ item.icon }}</i>
             {{ item.text }}

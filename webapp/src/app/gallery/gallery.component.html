@@ -1,26 +1,40 @@
+<div *ngIf="breadcrumbs().length > 0" class="navbar-fixed">
+  <nav>
+    <div class="nav-wrapper">
+      <div class="col s12">
+        <a
+          *ngFor="let crumb of breadcrumbs()"
+          (click)="onBreadcrumbClick(crumb)"
+          class="breadcrumb">
+          {{ crumb }}
+        </a>
+      </div>
+    </div>
+  </nav>
+</div>
+
 <div class="row">
-  <div class="col s12">
-    
+  <div class="col s12">    
     <table *ngIf="current_path" class="highlight">
       <tbody>
         <tr
-        *ngFor="let subPath of current_path.sub_paths | keys"
-        (click)="onDirectoryClick(current_path.sub_paths[subPath])"
+          *ngFor="let sub_path of current_path.sub_paths | keys"
+          (click)="onDirectoryClick(sub_path)"
         >
           <td>
             <i class="material-icons">perm_media</i>
           </td>
           <td class="directory-previews">
-            <div *ngFor="let preview_image_id of preview_images(current_path.sub_paths[subPath])"
+            <div *ngFor="let preview_image_id of preview_images(current_path.sub_paths[sub_path])"
               class="image-wrapper">
               <img src="/api/images/{{ preview_image_id }}?size=small"
                   class="fade-in" />
             </div>
           </td>
-          <td>{{ subPath }}</td>
+          <td>{{ sub_path }}</td>
           <td>
-            {{ current_path.sub_paths[subPath].files.length }} files and
-            {{ (current_path.sub_paths[subPath].sub_paths | keys).length }} sub folders
+            {{ current_path.sub_paths[sub_path].files.length }} files and
+            {{ (current_path.sub_paths[sub_path].sub_paths | keys).length }} sub folders
           </td>
         </tr>
         <tr

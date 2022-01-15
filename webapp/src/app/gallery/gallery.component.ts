@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MediaPresenterService } from '../media-presenter/media-presenter.service';
 import { GalleryMediaPresentation } from './gallery-media-presentation';
 
@@ -24,16 +25,20 @@ export class GalleryComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
+    private router: Router,
+    private route: ActivatedRoute,
     private mediaPresenterService: MediaPresenterService
-  ) {}
+  ) {
+    this.route.params.subscribe(
+      () => (this.current_path = this.get_gallery_path_by_route_param())
+    );
+  }
 
   ngOnInit(): void {
-    this.http
-      .get('/api/gallery/paths')
-      .subscribe(
-        (root_path) =>
-          (this.root_path = this.current_path = root_path as GalleryPath)
-      );
+    this.http.get('/api/gallery/paths').subscribe((root_path) => {
+      this.root_path = root_path as GalleryPath;
+      this.current_path = this.get_gallery_path_by_route_param();
+    });
   }
 
   preview_images(gallery_path: GalleryPath): number[] {
@@ -50,11 +55,50 @@ export class GalleryComponent implements OnInit {
     return imageIds;
   }
 
-  onDirectoryClick(gallery_path: GalleryPath) {
-    this.current_path = gallery_path;
+  breadcrumbs(): string[] {
+    const path_param = this.route.snapshot.params['path'];
+    if (!path_param) {
+      return [];
+    }
+    return path_param.split('/') as string[];
+  }
+
+  onDirectoryClick(sub_path: string) {
+    this.router.navigate([
+      'gallery',
+      { path: this.make_route_path_param(sub_path) },
+    ]);
+  }
+  onBreadcrumbClick(crumb: string) {
+    const breadcrumbs = this.breadcrumbs();
+    const clicked_index = breadcrumbs.indexOf(crumb);
+    const target_path_elems = breadcrumbs.slice(0, clicked_index + 1);
+    const target_path = target_path_elems.join('/');
+    this.router.navigate(['gallery', { path: target_path }]);
   }
   onFileClick(file: GalleryFile) {
     const presentation = new GalleryMediaPresentation(this.current_path, file);
     this.mediaPresenterService.startPresentation(presentation);
+  }
+
+  private make_route_path_param(sub_path: string): string {
+    const path_param = this.route.snapshot.params['path'];
+    if (path_param) {
+      return `${path_param}/${sub_path}`;
+    } else {
+      return sub_path;
+    }
+  }
+  private get_gallery_path_by_route_param(): GalleryPath {
+    const path_param = this.route.snapshot.params['path'];
+    if (!path_param || !this.root_path) {
+      return this.root_path;
+    }
+
+    const path_elements = path_param.split('/') as string[];
+    return path_elements.reduce(
+      (gallery_path, path_element) => gallery_path.sub_paths[path_element],
+      this.root_path
+    );
   }
 }
