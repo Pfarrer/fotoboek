@@ -1,7 +1,12 @@
 <div *ngIf="breadcrumbs().length > 0" class="navbar-fixed">
-  <nav>
+  <nav class="blue-grey darken-2">
     <div class="nav-wrapper">
       <div class="col s12">
+        <a
+          [routerLink]="['/gallery']"
+          class="breadcrumb">
+          Start
+        </a>
         <a
           *ngFor="let crumb of breadcrumbs()"
           (click)="onBreadcrumbClick(crumb)"
@@ -18,7 +23,7 @@
     <table *ngIf="current_path" class="highlight">
       <tbody>
         <tr
-          *ngFor="let sub_path of current_path.sub_paths | keys"
+          *ngFor="let sub_path of current_sub_paths"
           (click)="onDirectoryClick(sub_path)"
         >
           <td>
@@ -33,25 +38,21 @@
           </td>
           <td>{{ sub_path }}</td>
           <td>
-            {{ current_path.sub_paths[sub_path].files.length }} files and
-            {{ (current_path.sub_paths[sub_path].sub_paths | keys).length }} sub folders
+            {{ getSubPathInfoText(current_path.sub_paths[sub_path]) }}
           </td>
         </tr>
         <tr
           *ngFor="let file of current_path.files"
           (click)="onFileClick(file)"
         >
-          <td>
-            <i class="material-icons">file-image-outline</i>
-          </td>
+          <td><i class="material-icons">image</i></td>
           <td class="file-preview">
             <img src="/api/images/{{ file.id }}?size=small" class="fade-in" />
           </td>
-          <td></td>
-          <td></td>
+          <td>{{ file.file_name }}</td>
+          <td>{{ file.effective_date }}</td>
         </tr>
       </tbody>
     </table>
-
-</div>
+  </div>
 </div>

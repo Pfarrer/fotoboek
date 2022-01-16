@@ -32,6 +32,7 @@ impl GalleryPath {
 #[derive(Serialize, Debug, PartialEq)]
 pub struct GalleryFile {
     pub id: i32,
+    pub file_name: String,
     pub file_type: String,
     pub effective_date: NaiveDateTime,
 }
@@ -66,6 +67,7 @@ fn create_gallery_path_structure(file_infos: Vec<GalleryFileInfo>) -> GalleryPat
 fn create_gallery_file(file_info: &GalleryFileInfo) -> GalleryFile {
     GalleryFile {
         id: file_info.file_id,
+        file_name: file_info.file_name.clone(),
         file_type: file_info.file_type.clone(),
         effective_date: file_info.effective_date.clone(),
     }

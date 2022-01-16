@@ -11,7 +11,9 @@ export interface GalleryPath {
 
 export interface GalleryFile {
   id: number;
+  file_name: string;
   file_type: 'IMAGE';
+  effective_date: string;
 }
 
 @Component({
@@ -22,6 +24,7 @@ export interface GalleryFile {
 export class GalleryComponent implements OnInit {
   private root_path: GalleryPath = null;
   current_path: GalleryPath = null;
+  current_sub_paths: string[] = null;
 
   constructor(
     private http: HttpClient,
@@ -29,15 +32,15 @@ export class GalleryComponent implements OnInit {
     private route: ActivatedRoute,
     private mediaPresenterService: MediaPresenterService
   ) {
-    this.route.params.subscribe(
-      () => (this.current_path = this.get_gallery_path_by_route_param())
+    this.route.params.subscribe(() =>
+      this.update_current_path_by_route_param()
     );
   }
 
   ngOnInit(): void {
     this.http.get('/api/gallery/paths').subscribe((root_path) => {
       this.root_path = root_path as GalleryPath;
-      this.current_path = this.get_gallery_path_by_route_param();
+      this.update_current_path_by_route_param();
     });
   }
 
@@ -60,7 +63,32 @@ export class GalleryComponent implements OnInit {
     if (!path_param) {
       return [];
     }
-    return path_param.split('/') as string[];
+    return path_param.split('/');
+  }
+
+  getSubPathInfoText(gallery_path: GalleryPath): string {
+    const folders_count = Object.keys(gallery_path.sub_paths).length;
+    const files_count = gallery_path.files.length;
+
+    let folders_text = '';
+    if (folders_count == 1) {
+      folders_text = '1 folder';
+    } else if (folders_count > 1) {
+      folders_text = `${folders_count} folders`;
+    }
+
+    let files_text = '';
+    if (files_count == 1) {
+      files_text = '1 file';
+    } else if (files_count > 1) {
+      files_text = `${files_count} files`;
+    }
+
+    if (folders_text && files_text) {
+      return `${folders_text} and ${files_text}`;
+    } else {
+      return `${folders_text}${files_text}`;
+    }
   }
 
   onDirectoryClick(sub_path: string) {
@@ -89,16 +117,20 @@ export class GalleryComponent implements OnInit {
       return sub_path;
     }
   }
-  private get_gallery_path_by_route_param(): GalleryPath {
+  private update_current_path_by_route_param() {
     const path_param = this.route.snapshot.params['path'];
     if (!path_param || !this.root_path) {
-      return this.root_path;
+      this.current_path = this.root_path;
+    } else {
+      const path_elements = path_param.split('/') as string[];
+      this.current_path = path_elements.reduce(
+        (gallery_path, path_element) => gallery_path.sub_paths[path_element],
+        this.root_path
+      );
     }
 
-    const path_elements = path_param.split('/') as string[];
-    return path_elements.reduce(
-      (gallery_path, path_element) => gallery_path.sub_paths[path_element],
-      this.root_path
-    );
+    this.current_sub_paths = Object.keys(
+      (this.current_path || {}).sub_paths || {}
+    ).sort();
   }
 }

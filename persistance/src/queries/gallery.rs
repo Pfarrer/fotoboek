@@ -1,7 +1,7 @@
-use chrono::NaiveDateTime;
-use diesel::sql_types::{Integer, Text, Timestamp};
 use crate::diesel::RunQueryDsl;
 use crate::FotoboekDatabase;
+use chrono::NaiveDateTime;
+use diesel::sql_types::{Integer, Text, Timestamp};
 
 #[derive(QueryableByName)]
 pub struct GalleryFileInfo {
@@ -9,6 +9,8 @@ pub struct GalleryFileInfo {
     pub file_id: i32,
     #[sql_type = "Text"]
     pub rel_path: String,
+    #[sql_type = "Text"]
+    pub file_name: String,
     #[sql_type = "Text"]
     pub file_type: String,
     #[sql_type = "Timestamp"]
@@ -21,6 +23,7 @@ pub async fn get_gallery_file_infos(db: &FotoboekDatabase) -> Vec<GalleryFileInf
            SELECT
                files.id AS file_id,
                files.rel_path AS rel_path,
+               files.file_name AS file_name,
                files.file_type AS file_type,
                file_metadata.effective_date AS effective_date
            FROM files
@@ -32,5 +35,6 @@ pub async fn get_gallery_file_infos(db: &FotoboekDatabase) -> Vec<GalleryFileInf
         diesel::sql_query(sql)
             .load(conn)
             .expect("Query get_gallery_file_infos failed")
-    }).await
+    })
+    .await
 }
