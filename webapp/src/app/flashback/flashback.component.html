@@ -1,15 +1,30 @@
-<div *ngIf="hasNoFlashbacks()" class="row">
-  <div class="col s12 m6 push-m3">
-    <div class="card blue-grey darken-1">
-      <div class="card-content white-text">
-        <span class="card-title">No Flashback available!</span>
-        <p>
-          There is no image in your library that was taken on this exact day in any of the past years.
-          <br/>
-          Add more images and try again on another day.
-        </p>
-      </div>
+<div *ngIf="hasFlashbacks() else noFlashbacks" class="row">
+  <div *ngFor="let date of flashbackDates" class="flashback">
+    <h2>{{ date | flashbackDateFormatter }}</h2>
+    <div class="media">
+      <img
+        *ngFor="let imageId of dateImageIds[date]"
+        (click)="onImageClick(date, imageId)"
+        src="/api/images/{{ imageId }}?size=small"
+        class="preview fade-in"
+      />
     </div>
   </div>
 </div>
 
+<ng-template #noFlashbacks>
+  <div class="row">
+    <div class="col s12 m6 push-m3">
+      <div class="card blue-grey darken-1">
+        <div class="card-content white-text">
+          <span class="card-title">No Flashback available!</span>
+          <p>
+            There is no image in your library that was taken on this exact day in any of the past years.
+            <br/>
+            Add more images and try again on another day.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
