@@ -1,5 +1,9 @@
-nav a,tr {
+nav a,
+tr {
   cursor: pointer;
+}
+.nav-wrapper {
+  padding-left: 1em;
 }
 
 td.directory-previews {

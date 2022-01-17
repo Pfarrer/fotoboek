@@ -1,0 +1,7 @@
+@import "~materialize-css/sass/materialize";
+
+@media #{$large-and-up} {
+  nav .brand-logo {
+    padding-left: 0.5em;
+  }
+}

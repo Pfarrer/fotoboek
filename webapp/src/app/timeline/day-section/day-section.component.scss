@@ -1,3 +1,5 @@
+@import "~materialize-css/sass/materialize";
+
 :host {
   display: flex;
   flex-wrap: wrap;
@@ -6,7 +8,7 @@
   margin-left: 50px;
 }
 
-.date-wrapper {
+.vertical {
   position: absolute;
   left: -50px;
   top: 0;
@@ -16,12 +18,8 @@
   .date {
     position: absolute;
     transform: rotate(-90deg);
-    top: 6em;
-    left: -2em;
+    padding: 0 0.5em;
     background: white;
-    padding: 0em 1em;
-    font-weight: bold;
-    font-size: 110%;
   }
 
   &::before {
@@ -36,6 +34,19 @@
     border: 1px solid #e5e5e5;
     border-top: 0;
     border-bottom: 0;
+  }
+}
+
+@media #{$medium-and-up} {
+  .vertical .date {
+    top: 88px;
+    left: -20px;
+  }
+}
+@media #{$small-and-down} {
+  .vertical .date {
+    top: 40px;
+    left: -20px;
   }
 }
 

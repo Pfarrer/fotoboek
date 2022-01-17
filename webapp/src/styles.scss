@@ -16,9 +16,19 @@
   }
 }
 
+@media #{$medium-and-up} {
+  img.preview {
+    height: 200px;
+    width: 200px;
+  }
+}
+@media #{$small-and-down} {
+  img.preview {
+    height: 100px;
+    width: 100px;
+  }
+}
 img.preview {
-  height: 200px;
-  width: 200px;
   object-fit: cover;
   cursor: pointer;
   margin: 0.1em;
