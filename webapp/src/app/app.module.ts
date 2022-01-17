@@ -1,6 +1,11 @@
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-
+import {
+  BrowserModule,
+  HammerGestureConfig,
+  HammerModule,
+  HAMMER_GESTURE_CONFIG,
+} from '@angular/platform-browser';
+import * as Hammer from 'hammerjs';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -18,6 +23,12 @@ import { PeopleComponent } from './people/people.component';
 import { GeoComponent } from './geo/geo.component';
 import { StatsComponent } from './stats/stats.component';
 import { FlashbackDateFormatterPipe } from './flashback/flashback-date-formatter.pipe';
+
+export class MyHammerConfig extends HammerGestureConfig {
+  overrides = <any>{
+    swipe: { direction: Hammer.DIRECTION_ALL },
+  };
+}
 
 @NgModule({
   declarations: [
@@ -37,6 +48,7 @@ import { FlashbackDateFormatterPipe } from './flashback/flashback-date-formatter
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
+    HammerModule,
     HttpClientModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
@@ -45,7 +57,13 @@ import { FlashbackDateFormatterPipe } from './flashback/flashback-date-formatter
       registrationStrategy: 'registerWhenStable:30000',
     }),
   ],
-  providers: [MediaPresenterService],
+  providers: [
+    MediaPresenterService,
+    {
+      provide: HAMMER_GESTURE_CONFIG,
+      useClass: MyHammerConfig,
+    },
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

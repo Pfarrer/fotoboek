@@ -2,9 +2,13 @@
   *ngIf="slide"
   (window:keydown.arrowLeft)="gotoPreviousSlide()"
   (window:keydown.arrowRight)="gotoNextSlide()"
-  (window:keydown.esc)="onBackdropClick()"
-  (click)="onBackdropClick()"
+  (window:keydown.esc)="closePresenter()"
+  (click)="closePresenter()"
+  (swipeLeft)="gotoPreviousSlide()"
+  (swipeRight)="gotoNextSlide()"
+  (swipeUp)="closePresenter()"
+  (swipeDown)="closePresenter()"
   class="media-presenter"
 >
-  <img src="{{ imageUrl() }}">
+  <img src="{{ imageUrl() }}" />
 </div>

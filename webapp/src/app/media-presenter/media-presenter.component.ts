@@ -1,5 +1,5 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {MediaPresenterService} from "./media-presenter.service";
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { MediaPresenterService } from './media-presenter.service';
 
 export interface MediaPresentationSlide {
   imageId: number;
@@ -14,16 +14,15 @@ export interface MediaPresentationSlide {
 @Component({
   selector: 'app-media-presenter',
   templateUrl: './media-presenter.component.html',
-  styleUrls: ['./media-presenter.component.scss']
+  styleUrls: ['./media-presenter.component.scss'],
 })
 export class MediaPresenterComponent implements OnInit {
-
   slide: MediaPresentationSlide | undefined = undefined;
 
   constructor(
     // private renderer: Renderer2,
     private mediaPresenterService: MediaPresenterService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.mediaPresenterService.registerComponent(this);
@@ -33,12 +32,9 @@ export class MediaPresenterComponent implements OnInit {
     this.slide = presentationSlide;
   }
 
-  onBackdropClick() {
+  closePresenter() {
     this.slide = undefined;
   }
-
-    // this.renderer.addClass(document.body, 'media-presenter-open');
-  // this.renderer.removeClass(document.body, 'media-presenter-open');
 
   imageUrl(): string {
     return `/api/images/${this.slide.imageId}?size=large`;
