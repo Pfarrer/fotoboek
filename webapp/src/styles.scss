@@ -1,4 +1,4 @@
-@import "~materialize-css/sass/materialize";
+@use "~materialize-css/sass/materialize";
 
 .fade-in {
   animation-name: fadeIn;
@@ -16,13 +16,13 @@
   }
 }
 
-@media #{$medium-and-up} {
+@media #{materialize.$medium-and-up} {
   img.preview {
     height: 200px;
     width: 200px;
   }
 }
-@media #{$small-and-down} {
+@media #{materialize.$small-and-down} {
   img.preview {
     height: 100px;
     width: 100px;
