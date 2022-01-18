@@ -1,4 +1,4 @@
-@use "~materialize-css/sass/materialize";
+@import "../../../materialize_variables";
 
 :host {
   display: flex;
@@ -37,13 +37,13 @@
   }
 }
 
-@media #{materialize.$medium-and-up} {
+@media #{$medium-and-up} {
   .vertical .date {
     top: 88px;
     left: -20px;
   }
 }
-@media #{materialize.$small-and-down} {
+@media #{$small-and-down} {
   .vertical .date {
     top: 40px;
     left: -20px;
