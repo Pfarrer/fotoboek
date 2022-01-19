@@ -1,11 +1,14 @@
-<div class="vertical">
-  <span class="date">{{ date }}</span>
-</div>
 <ng-container *ngIf="isSectionVisible">
+  <div class="vertical">
+    <span class="date">{{ date }}</span>
+  </div>
   <img
     *ngFor="let imageId of imageIds"
     (click)="imageClick.emit(imageId)"
     src="/api/images/{{ imageId }}?size=small"
     class="preview fade-in"
   />
+</ng-container>
+<ng-container *ngIf="!isSectionVisible">
+  <button (click)="setVisible()" class="btn-small">Load {{ date }}</button>
 </ng-container>

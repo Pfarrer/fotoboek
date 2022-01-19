@@ -4,23 +4,22 @@ import {
   Component,
   OnInit,
   QueryList,
-  ViewChildren
+  ViewChildren,
 } from '@angular/core';
-import {HttpClient} from "@angular/common/http";
-import {DaySectionComponent} from "./day-section/day-section.component";
-import {MediaPresenterService} from "../media-presenter/media-presenter.service";
-import {TimelineMediaPresentation} from "./timeline-media-presentation";
+import { HttpClient } from '@angular/common/http';
+import { DaySectionComponent } from './day-section/day-section.component';
+import { MediaPresenterService } from '../media-presenter/media-presenter.service';
+import { TimelineMediaPresentation } from './timeline-media-presentation';
 
 export type TimelineDates = string[];
-export type DateImageIds = { [date: string]: number[]; };
+export type DateImageIds = { [date: string]: number[] };
 
 @Component({
   selector: 'app-timeline',
   templateUrl: './timeline.component.html',
-  styleUrls: ['./timeline.component.scss']
+  styleUrls: ['./timeline.component.scss'],
 })
 export class TimelineComponent implements OnInit, AfterViewChecked {
-
   @ViewChildren(DaySectionComponent)
   daySections: QueryList<DaySectionComponent>;
 
@@ -32,18 +31,18 @@ export class TimelineComponent implements OnInit, AfterViewChecked {
     private http: HttpClient,
     private changeDetector: ChangeDetectorRef,
     private mediaPresenterService: MediaPresenterService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    this.http.get('/api/timeline/dates')
-      .subscribe(dateImageIds => {
-        this.timelineDates = Object.keys(dateImageIds).reverse();
-        this.dateImageIds = dateImageIds as DateImageIds;
-      });
+    this.http.get('/api/timeline/dates').subscribe((dateImageIds) => {
+      this.timelineDates = Object.keys(dateImageIds).reverse();
+      this.dateImageIds = dateImageIds as DateImageIds;
+    });
   }
 
   ngAfterViewChecked(): void {
-    if (this.daySections.length === 0 || this.intersectionObserver !== null) return;
+    if (this.daySections.length === 0 || this.intersectionObserver !== null)
+      return;
 
     this.initializeIntersectionObserver();
     this.preloadVisibleDaySections();
@@ -52,18 +51,20 @@ export class TimelineComponent implements OnInit, AfterViewChecked {
 
   private initializeIntersectionObserver() {
     const options = {
-      rootMargin: '0px',
-      threshold: 0.1
+      rootMargin: '101px',
+      threshold: [0.01],
     };
-    this.intersectionObserver = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
+    this.intersectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
         let index = +entries[0].target.getAttribute('data-index');
         let daySection = this.daySections.get(index);
-        daySection.setVisible(entry.isIntersecting);
+        daySection.setVisible();
       });
     }, options);
 
-    this.daySections.forEach(daySection => this.intersectionObserver.observe(daySection.elementRef.nativeElement));
+    this.daySections.forEach((daySection) =>
+      this.intersectionObserver.observe(daySection.elementRef.nativeElement)
+    );
   }
 
   /**
@@ -75,14 +76,18 @@ export class TimelineComponent implements OnInit, AfterViewChecked {
   private preloadVisibleDaySections() {
     window.scroll(0, 0);
     const windowHeight = window.innerHeight;
-    const estimatedNumberOfVisibleSections = Math.ceil(windowHeight / 200);
-    for (let i=0; i<estimatedNumberOfVisibleSections; i++) {
-      this.daySections.get(i).setVisibleNoDebounce();
+    const estimatedNumberOfVisibleSections = Math.ceil(windowHeight / 100);
+    for (let i = 0; i < estimatedNumberOfVisibleSections; i++) {
+      this.daySections.get(i).setVisible();
     }
   }
 
   onImageClick(imageId: number) {
-    const presentation = new TimelineMediaPresentation(this.timelineDates, this.dateImageIds, imageId);
+    const presentation = new TimelineMediaPresentation(
+      this.timelineDates,
+      this.dateImageIds,
+      imageId
+    );
     this.mediaPresenterService.startPresentation(presentation);
   }
 }
