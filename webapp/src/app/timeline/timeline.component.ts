@@ -14,6 +14,8 @@ import { TimelineMediaPresentation } from './timeline-media-presentation';
 export type TimelineDates = string[];
 export type DateImageIds = { [date: string]: number[] };
 
+declare var M: any;
+
 @Component({
   selector: 'app-timeline',
   templateUrl: './timeline.component.html',
@@ -44,6 +46,7 @@ export class TimelineComponent implements OnInit, AfterViewChecked {
     if (this.daySections.length === 0 || this.intersectionObserver !== null)
       return;
 
+    this.initializeScrollspy();
     this.initializeIntersectionObserver();
     this.preloadVisibleDaySections();
     this.changeDetector.detectChanges();
@@ -89,5 +92,10 @@ export class TimelineComponent implements OnInit, AfterViewChecked {
       imageId
     );
     this.mediaPresenterService.startPresentation(presentation);
+  }
+
+  private initializeScrollspy() {
+    const scrollspyElements = document.querySelectorAll('.scrollspy');
+    M.ScrollSpy.init(scrollspyElements, {});
   }
 }

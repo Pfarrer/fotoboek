@@ -1,6 +1,6 @@
 <ng-container *ngIf="isSectionVisible">
   <div class="vertical">
-    <span class="date">{{ date }}</span>
+    <span class="date">{{ date | date }}</span>
   </div>
   <img
     *ngFor="let imageId of imageIds"

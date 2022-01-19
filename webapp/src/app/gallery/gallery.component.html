@@ -19,7 +19,7 @@
 </div>
 
 <div class="row">
-  <div class="col s12">    
+  <div class="col s12">
     <table *ngIf="current_path" class="highlight">
       <tbody>
         <tr
@@ -50,7 +50,7 @@
             <img src="/api/images/{{ file.id }}?size=small" class="fade-in" />
           </td>
           <td>{{ file.file_name }}</td>
-          <td>{{ file.effective_date }}</td>
+          <td>{{ file.effective_date | date:'medium' }}</td>
         </tr>
       </tbody>
     </table>

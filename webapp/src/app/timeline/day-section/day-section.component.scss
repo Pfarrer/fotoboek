@@ -20,6 +20,8 @@
     transform: rotate(-90deg);
     padding: 0 0.5em;
     background: white;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   &::before {
@@ -39,13 +41,13 @@
 
 @media #{$medium-and-up} {
   .vertical .date {
-    top: 88px;
-    left: -20px;
+    top: 108px;
+    left: -24px;
   }
 }
 @media #{$small-and-down} {
   .vertical .date {
-    top: 40px;
+    top: 55px;
     left: -20px;
   }
 }
