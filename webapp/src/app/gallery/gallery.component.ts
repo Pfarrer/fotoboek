@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MediaPresenterService } from '../media-presenter/media-presenter.service';
-import { GalleryMediaPresentation } from './gallery-media-presentation';
 
 export interface GalleryPath {
   sub_paths: { [name: string]: GalleryPath };
@@ -44,7 +43,7 @@ export class GalleryComponent implements OnInit {
     });
   }
 
-  preview_images(gallery_path: GalleryPath): number[] {
+  get_preview_images_for_sub_path(gallery_path: GalleryPath): number[] {
     if (gallery_path.files.length <= 4) {
       return gallery_path.files.map((file) => file.id);
     }
@@ -64,6 +63,10 @@ export class GalleryComponent implements OnInit {
       return [];
     }
     return path_param.split('/');
+  }
+
+  containsSubPaths(): boolean {
+    return this.current_path && Object.keys(this.current_path.sub_paths).length > 0;
   }
 
   getSubPathInfoText(gallery_path: GalleryPath): string {
@@ -94,19 +97,29 @@ export class GalleryComponent implements OnInit {
   onDirectoryClick(sub_path: string) {
     this.router.navigate([
       'gallery',
-      { path: this.make_route_path_param(sub_path) },
+      {path: this.make_route_path_param(sub_path)},
     ]);
   }
+
   onBreadcrumbClick(crumb: string) {
     const breadcrumbs = this.breadcrumbs();
     const clicked_index = breadcrumbs.indexOf(crumb);
     const target_path_elems = breadcrumbs.slice(0, clicked_index + 1);
     const target_path = target_path_elems.join('/');
-    this.router.navigate(['gallery', { path: target_path }]);
+    this.router.navigate(['gallery', {path: target_path}]);
   }
+
   onFileClick(file: GalleryFile) {
-    const presentation = new GalleryMediaPresentation(this.current_path, file);
-    this.mediaPresenterService.startPresentation(presentation);
+    const startIndex = this.current_path.files.indexOf(file);
+    const items = this.current_path.files.map((file: GalleryFile) => (
+      {
+        src: `/api/images/${file.id}?size=large`,
+        thumb: `/api/images/${file.id}?size=small`,
+        subHtml: file.file_name,
+      }
+    ));
+
+    this.mediaPresenterService.startPresentation(items, startIndex);
   }
 
   private make_route_path_param(sub_path: string): string {
@@ -117,6 +130,7 @@ export class GalleryComponent implements OnInit {
       return sub_path;
     }
   }
+
   private update_current_path_by_route_param() {
     const path_param = this.route.snapshot.params['path'];
     if (!path_param || !this.root_path) {
@@ -132,5 +146,9 @@ export class GalleryComponent implements OnInit {
     this.current_sub_paths = Object.keys(
       (this.current_path || {}).sub_paths || {}
     ).sort();
+  }
+
+  onToggleRecursiveViewClick() {
+
   }
 }

@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MediaPresenterService } from '../media-presenter/media-presenter.service';
-import { FlashbackMediaPresentation } from './flashback-media-presentation';
 
 type FlashbackDates = string[];
 type DateImageIds = { [date: string]: number[] };
@@ -18,7 +17,8 @@ export class FlashbackComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private mediaPresenterService: MediaPresenterService
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     this.http.get('/api/flashback/dates').subscribe((dateImageIds) => {
@@ -32,10 +32,11 @@ export class FlashbackComponent implements OnInit {
   }
 
   onImageClick(date: string, imageId: number) {
-    const presentation = new FlashbackMediaPresentation(
-      this.dateImageIds[date],
-      imageId
-    );
-    this.mediaPresenterService.startPresentation(presentation);
+    const imageIds = this.dateImageIds[date];
+    const startIndex = imageIds.indexOf(imageId);
+    const items = imageIds.map(imageId => ({
+      src: `/api/images/${imageId}?size=large`,
+    }));
+    this.mediaPresenterService.startPresentation(items, startIndex);
   }
 }

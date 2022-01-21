@@ -4,6 +4,10 @@ tr {
 }
 .nav-wrapper {
   padding-left: 1em;
+
+  a {
+    white-space: nowrap;
+  }
 }
 
 td.directory-previews {

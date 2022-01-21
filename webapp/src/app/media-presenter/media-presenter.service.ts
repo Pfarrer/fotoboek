@@ -1,17 +1,16 @@
-import {Injectable} from '@angular/core';
-import {MediaPresentationSlide, MediaPresenterComponent} from "./media-presenter.component";
+import { Injectable } from '@angular/core';
+import { MediaPresenterComponent } from "./media-presenter.component";
+import { GalleryItem } from "lightgallery/lg-utils";
 
 @Injectable()
-export class MediaPresenterService  {
-
+export class MediaPresenterService {
   private component: MediaPresenterComponent;
 
   registerComponent(component: MediaPresenterComponent) {
     this.component = component;
   }
 
-  startPresentation(presentationSlide: MediaPresentationSlide) {
-    this.component.setSlide(presentationSlide);
+  startPresentation(items: GalleryItem[], startIndex: number) {
+    this.component.startPresentation(items, startIndex);
   }
-
 }

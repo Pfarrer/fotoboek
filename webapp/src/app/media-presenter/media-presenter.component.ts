@@ -1,15 +1,9 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MediaPresenterService } from './media-presenter.service';
-
-export interface MediaPresentationSlide {
-  imageId: number;
-
-  hasNextSlide: boolean;
-  hasPreviousSlide: boolean;
-
-  getNextSlide(): MediaPresentationSlide;
-  getPreviousSlide(): MediaPresentationSlide;
-}
+import { LightGallery } from "lightgallery/lightgallery";
+import lgZoom from 'lightgallery/plugins/zoom';
+import { InitDetail } from "lightgallery/lg-events";
+import { GalleryItem } from "lightgallery/lg-utils";
 
 @Component({
   selector: 'app-media-presenter',
@@ -17,10 +11,19 @@ export interface MediaPresentationSlide {
   styleUrls: ['./media-presenter.component.scss'],
 })
 export class MediaPresenterComponent implements OnInit {
-  slide: MediaPresentationSlide | undefined = undefined;
+  lightGallery: LightGallery = null;
+
+  settings = {
+    counter: false,
+    loop: false,
+    plugins: [lgZoom]
+  };
+
+  onLightGalleryInit = (detail: InitDetail): void => {
+    this.lightGallery = detail.instance;
+  };
 
   constructor(
-    // private renderer: Renderer2,
     private mediaPresenterService: MediaPresenterService
   ) {}
 
@@ -28,30 +31,8 @@ export class MediaPresenterComponent implements OnInit {
     this.mediaPresenterService.registerComponent(this);
   }
 
-  setSlide(presentationSlide: MediaPresentationSlide) {
-    this.slide = presentationSlide;
-  }
-
-  closePresenter() {
-    this.slide = undefined;
-  }
-
-  imageUrl(): string {
-    return `/api/images/${this.slide.imageId}?size=large`;
-  }
-
-  gotoPreviousSlide() {
-    if (this.slide.hasPreviousSlide) {
-      this.slide = this.slide.getPreviousSlide();
-    } else {
-      this.slide = undefined;
-    }
-  }
-  gotoNextSlide() {
-    if (this.slide.hasNextSlide) {
-      this.slide = this.slide.getNextSlide();
-    } else {
-      this.slide = undefined;
-    }
+  startPresentation(items: GalleryItem[], startIndex: number) {
+    this.lightGallery.galleryItems = items;
+    this.lightGallery.openGallery(startIndex);
   }
 }

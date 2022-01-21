@@ -1,19 +1,17 @@
 <div *ngIf="breadcrumbs().length > 0" class="navbar-fixed">
   <nav class="blue-grey darken-2">
     <div class="nav-wrapper">
-      <div class="col s12">
-        <a
-          [routerLink]="['/gallery']"
-          class="breadcrumb">
-          Start
-        </a>
-        <a
-          *ngFor="let crumb of breadcrumbs()"
-          (click)="onBreadcrumbClick(crumb)"
-          class="breadcrumb">
-          {{ crumb }}
-        </a>
-      </div>
+      <a
+        [routerLink]="['/gallery']"
+        class="breadcrumb">
+        Start
+      </a>
+      <a
+        *ngFor="let crumb of breadcrumbs()"
+        (click)="onBreadcrumbClick(crumb)"
+        class="breadcrumb">
+        {{ crumb }}
+      </a>
     </div>
   </nav>
 </div>
@@ -30,7 +28,7 @@
             <i class="material-icons">perm_media</i>
           </td>
           <td class="directory-previews">
-            <div *ngFor="let preview_image_id of preview_images(current_path.sub_paths[sub_path])"
+            <div *ngFor="let preview_image_id of get_preview_images_for_sub_path(current_path.sub_paths[sub_path])"
               class="image-wrapper">
               <img src="/api/images/{{ preview_image_id }}?size=small"
                   class="fade-in" />
@@ -55,4 +53,13 @@
       </tbody>
     </table>
   </div>
+</div>
+
+<div *ngIf="containsSubPaths()" class="fixed-action-btn">
+  <a
+    (click)="onToggleRecursiveViewClick()"
+    class="btn-floating blue-grey darken-2"
+  >
+    <i class="large material-icons">burst_mode</i>
+  </a>
 </div>

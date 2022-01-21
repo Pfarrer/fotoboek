@@ -1,14 +1,2 @@
-<div
-  *ngIf="slide"
-  (window:keydown.arrowLeft)="gotoPreviousSlide()"
-  (window:keydown.arrowRight)="gotoNextSlide()"
-  (window:keydown.esc)="closePresenter()"
-  (click)="closePresenter()"
-  (swipeLeft)="gotoNextSlide()"
-  (swipeRight)="gotoPreviousSlide()"
-  (swipeUp)="closePresenter()"
-  (swipeDown)="closePresenter()"
-  class="media-presenter"
->
-  <img src="{{ imageUrl() }}" />
-</div>
+<lightgallery [settings]="settings" [onInit]="onLightGalleryInit">
+</lightgallery>

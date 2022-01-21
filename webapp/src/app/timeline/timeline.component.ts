@@ -1,15 +1,7 @@
-import {
-  AfterViewChecked,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-  QueryList,
-  ViewChildren,
-} from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren, } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DaySectionComponent } from './day-section/day-section.component';
 import { MediaPresenterService } from '../media-presenter/media-presenter.service';
-import { TimelineMediaPresentation } from './timeline-media-presentation';
 
 export type TimelineDates = string[];
 export type DateImageIds = { [date: string]: number[] };
@@ -33,7 +25,8 @@ export class TimelineComponent implements OnInit, AfterViewChecked {
     private http: HttpClient,
     private changeDetector: ChangeDetectorRef,
     private mediaPresenterService: MediaPresenterService
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     this.http.get('/api/timeline/dates').subscribe((dateImageIds) => {
@@ -86,12 +79,18 @@ export class TimelineComponent implements OnInit, AfterViewChecked {
   }
 
   onImageClick(imageId: number) {
-    const presentation = new TimelineMediaPresentation(
-      this.timelineDates,
-      this.dateImageIds,
-      imageId
-    );
-    this.mediaPresenterService.startPresentation(presentation);
+    const imageIds = this.timelineDates.reduce((arr, date) => {
+      return [
+        ...arr,
+        ...this.dateImageIds[date]
+      ]
+    }, []);
+
+    const startIndex = imageIds.indexOf(imageId);
+    const items = imageIds.map(imageId => ({
+      src: `/api/images/${imageId}?size=large`,
+    }));
+    this.mediaPresenterService.startPresentation(items, startIndex);
   }
 
   private initializeScrollspy() {

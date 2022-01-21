@@ -33,8 +33,7 @@
               "./node_modules/materialize-css/dist/js/materialize.js"
             ],
             "serviceWorker": true,
-            "ngswConfigPath": "ngsw-config.json",
-            "allowedCommonJsDependencies": ["hammerjs"]
+            "ngswConfigPath": "ngsw-config.json"
           },
           "configurations": {
             "production": {
