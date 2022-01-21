@@ -19,7 +19,7 @@
 <div class="row">
   <div class="col s12">
     <table *ngIf="current_path" class="highlight">
-      <tbody>
+      <tbody *ngIf="!recursiveMode">
         <tr
           *ngFor="let sub_path of current_sub_paths"
           (click)="onDirectoryClick(sub_path)"
@@ -39,8 +39,10 @@
             {{ getSubPathInfoText(current_path.sub_paths[sub_path]) }}
           </td>
         </tr>
+      </tbody>
+      <tbody>
         <tr
-          *ngFor="let file of current_path.files"
+          *ngFor="let file of get_visible_files()"
           (click)="onFileClick(file)"
         >
           <td><i class="material-icons">image</i></td>
@@ -57,7 +59,7 @@
 
 <div *ngIf="containsSubPaths()" class="fixed-action-btn">
   <a
-    (click)="onToggleRecursiveViewClick()"
+    (click)="recursiveMode=!recursiveMode"
     class="btn-floating blue-grey darken-2"
   >
     <i class="large material-icons">burst_mode</i>

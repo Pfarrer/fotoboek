@@ -24,6 +24,7 @@ export class GalleryComponent implements OnInit {
   private root_path: GalleryPath = null;
   current_path: GalleryPath = null;
   current_sub_paths: string[] = null;
+  recursiveMode = false;
 
   constructor(
     private http: HttpClient,
@@ -94,6 +95,27 @@ export class GalleryComponent implements OnInit {
     }
   }
 
+  get_visible_files(): GalleryFile[] {
+    function extract_files_recursively(gallery_path: GalleryPath): GalleryFile[] {
+      return Object.values(gallery_path.sub_paths).reduce((files, sub_path) => {
+        return [...files, ...extract_files_recursively(sub_path)];
+      }, gallery_path.files);
+    }
+
+    if (!this.recursiveMode) {
+      return this.current_path.files;
+    } else {
+      return extract_files_recursively(this.current_path)
+        .sort((a, b) => {
+          if (a.effective_date == b.effective_date) {
+            return 0;
+          } else {
+            return a.effective_date > b.effective_date ? 1 : -1;
+          }
+        });
+    }
+  }
+
   onDirectoryClick(sub_path: string) {
     this.router.navigate([
       'gallery',
@@ -110,8 +132,10 @@ export class GalleryComponent implements OnInit {
   }
 
   onFileClick(file: GalleryFile) {
-    const startIndex = this.current_path.files.indexOf(file);
-    const items = this.current_path.files.map((file: GalleryFile) => (
+    const files = this.get_visible_files();
+
+    const startIndex = files.indexOf(file);
+    const items = files.map((file: GalleryFile) => (
       {
         src: `/api/images/${file.id}?size=large`,
         thumb: `/api/images/${file.id}?size=small`,
@@ -132,6 +156,8 @@ export class GalleryComponent implements OnInit {
   }
 
   private update_current_path_by_route_param() {
+    this.recursiveMode = false;
+
     const path_param = this.route.snapshot.params['path'];
     if (!path_param || !this.root_path) {
       this.current_path = this.root_path;
@@ -146,9 +172,5 @@ export class GalleryComponent implements OnInit {
     this.current_sub_paths = Object.keys(
       (this.current_path || {}).sub_paths || {}
     ).sort();
-  }
-
-  onToggleRecursiveViewClick() {
-
   }
 }
