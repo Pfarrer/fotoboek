@@ -22,13 +22,7 @@ export class DaySectionComponent implements OnInit {
   @Output()
   imageClick = new EventEmitter<number>();
 
-  isSectionVisible = false;
-
   constructor(public elementRef: ElementRef) {}
 
   ngOnInit(): void {}
-
-  setVisible() {
-    this.isSectionVisible = true;
-  }
 }

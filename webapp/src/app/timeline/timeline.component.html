@@ -14,8 +14,13 @@
 
   <div class="col hide-on-small-only m3 l2">
     <ul class="section table-of-contents">
-      <li *ngFor="let date of timelineDates; let i = index">
-        <a href="#section-{{ date }}">{{ date | date }}</a>
+      <li *ngFor="let date of allTimelineDates; let i = index">
+        <a
+          (click)="onScrollspyClick(date); $event.preventDefault()"
+          href="#section-{{ date }}"
+        >
+          {{ date | date }}
+        </a>
       </li>
     </ul>
   </div>

@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren, } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit, QueryList, ViewChildren, } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DaySectionComponent } from './day-section/day-section.component';
 import { MediaPresenterService } from '../media-presenter/media-presenter.service';
@@ -13,13 +13,16 @@ declare var M: any;
   templateUrl: './timeline.component.html',
   styleUrls: ['./timeline.component.scss'],
 })
-export class TimelineComponent implements OnInit, AfterViewChecked {
+export class TimelineComponent implements OnInit {
   @ViewChildren(DaySectionComponent)
   daySections: QueryList<DaySectionComponent>;
 
+  allTimelineDates: TimelineDates = null;
   timelineDates: TimelineDates = null;
   dateImageIds: DateImageIds = null;
-  intersectionObserver: IntersectionObserver = null;
+  infiniteScrollManager: InfiniteScrollManager = null;
+
+  scrollSpyInstances: any = null;
 
   constructor(
     private http: HttpClient,
@@ -30,52 +33,40 @@ export class TimelineComponent implements OnInit, AfterViewChecked {
 
   ngOnInit(): void {
     this.http.get('/api/timeline/dates').subscribe((dateImageIds) => {
-      this.timelineDates = Object.keys(dateImageIds).reverse();
       this.dateImageIds = dateImageIds as DateImageIds;
+      this.allTimelineDates = Object.keys(dateImageIds).reverse();
+
+      const estimatedNumberOfVisibleSections = TimelineComponent.estimatedNumberOfVisibleSections();
+      this.infiniteScrollManager = new InfiniteScrollManager(
+        estimatedNumberOfVisibleSections,
+        3*estimatedNumberOfVisibleSections,
+        this.allTimelineDates
+      );
+      this.timelineDates = this.infiniteScrollManager.moveTo(this.allTimelineDates[0]);
+      this.updateScrollspy();
     });
   }
 
-  ngAfterViewChecked(): void {
-    if (this.daySections.length === 0 || this.intersectionObserver !== null)
-      return;
+  @HostListener('window:scroll', [])
+  onScroll() {
+    const bufferY = 100;
 
-    this.initializeScrollspy();
-    this.initializeIntersectionObserver();
-    this.preloadVisibleDaySections();
-    this.changeDetector.detectChanges();
-  }
-
-  private initializeIntersectionObserver() {
-    const options = {
-      rootMargin: '101px',
-      threshold: [0.01],
-    };
-    this.intersectionObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        let index = +entries[0].target.getAttribute('data-index');
-        let daySection = this.daySections.get(index);
-        daySection.setVisible();
-      });
-    }, options);
-
-    this.daySections.forEach((daySection) =>
-      this.intersectionObserver.observe(daySection.elementRef.nativeElement)
-    );
-  }
-
-  /**
-   * Right after initializing the day sections in the template, all day sections are still set to "not visible", also
-   * those that are in fact visible. The IntersectionObserver will not trigger for these day sections, since no scroll
-   * event occurred. This method will over-approximate and naively mark the fist couple day sections as visible.
-   * @private
-   */
-  private preloadVisibleDaySections() {
-    window.scroll(0, 0);
-    const windowHeight = window.innerHeight;
-    const estimatedNumberOfVisibleSections = Math.ceil(windowHeight / 100);
-    for (let i = 0; i < estimatedNumberOfVisibleSections; i++) {
-      this.daySections.get(i).setVisible();
+    // Check if top is reached
+    if (window.scrollY < bufferY) {
+      this.timelineDates = this.infiniteScrollManager.extendTop(2);
+      this.updateScrollspy();
     }
+
+    // Check if bottom is reached
+    if ((window.innerHeight + window.scrollY + bufferY) >= document.body.offsetHeight) {
+      this.timelineDates = this.infiniteScrollManager.extendBottom(2);
+      this.updateScrollspy();
+    }
+  }
+
+  private static estimatedNumberOfVisibleSections(): number {
+    const windowHeight = window.innerHeight;
+    return Math.ceil(windowHeight / 100);
   }
 
   onImageClick(imageId: number) {
@@ -93,8 +84,53 @@ export class TimelineComponent implements OnInit, AfterViewChecked {
     this.mediaPresenterService.startPresentation(items, startIndex);
   }
 
-  private initializeScrollspy() {
+  private updateScrollspy() {
+    if (this.scrollSpyInstances) {
+      this.scrollSpyInstances.forEach(instance => instance.destroy());
+    }
     const scrollspyElements = document.querySelectorAll('.scrollspy');
-    M.ScrollSpy.init(scrollspyElements, {});
+    this.scrollSpyInstances = M.ScrollSpy.init(scrollspyElements, {});
+  }
+
+  onScrollspyClick(date: string) {
+    this.timelineDates = this.infiniteScrollManager.moveTo(date);
+  }
+}
+
+class InfiniteScrollManager {
+
+  private visibleRangeTop = 0;
+  private visibleRangeBottom = 0;
+
+  constructor(
+    private minRange: number,
+    private maxRange: number,
+    private dates: string[]
+  ) {
+    this.visibleRangeBottom = Math.min(minRange, this.dates.length-1);
+  }
+
+  extendTop(count: number) {
+    this.visibleRangeTop = Math.max(0, this.visibleRangeTop - count);
+    if (this.visibleRangeBottom - this.visibleRangeTop > this.maxRange) {
+      this.visibleRangeBottom = this.visibleRangeTop + this.maxRange;
+    }
+    console.log(`Extend top, new range: [${this.visibleRangeTop}, ${this.visibleRangeBottom}]`)
+    return this.dates.slice(this.visibleRangeTop, this.visibleRangeBottom);
+  }
+
+  extendBottom(count: number) {
+    this.visibleRangeBottom = Math.min(this.dates.length - 1, this.visibleRangeBottom + count);
+    if (this.visibleRangeBottom - this.visibleRangeTop > this.maxRange) {
+      this.visibleRangeTop = this.visibleRangeBottom - this.maxRange;
+    }
+    console.log(`Extend bottom, new range: [${this.visibleRangeTop}, ${this.visibleRangeBottom}]`)
+    return this.dates.slice(this.visibleRangeTop, this.visibleRangeBottom);
+  }
+
+  moveTo(date: string) {
+    this.visibleRangeTop = this.dates.indexOf(date);
+    this.visibleRangeBottom = Math.min(this.dates.length - 1, this.visibleRangeTop + this.minRange);
+    return this.dates.slice(this.visibleRangeTop, this.visibleRangeBottom);
   }
 }
