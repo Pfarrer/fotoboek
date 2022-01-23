@@ -30,18 +30,21 @@ impl File {
         ).await
     }
 
-    pub fn insert(self, conn: &diesel::SqliteConnection) -> Result<Option<File>, String> {
-        insert_into(dsl::files)
-            .values(&self)
-            .execute(conn)
-            .map_err(|err| err.to_string())?;
-        let file = dsl::files
-            .filter(dsl::rel_path.eq(self.rel_path))
-            .limit(1)
-            .load(conn)
-            .map_err(|err| err.to_string())?
-            .into_iter()
-            .next();
-        Ok(file)
+    pub async fn insert(self, db: &FotoboekDatabase) -> Result<Option<File>, String> {
+        db.run(move |conn| {
+            insert_into(dsl::files)
+                .values(&self)
+                .execute(conn)
+                .map_err(|err| err.to_string())?;
+            let file = dsl::files
+                .filter(dsl::rel_path.eq(self.rel_path))
+                .limit(1)
+                .load(conn)
+                .map_err(|err| err.to_string())?
+                .into_iter()
+                .next();
+
+            Ok(file)
+        }).await
     }
 }

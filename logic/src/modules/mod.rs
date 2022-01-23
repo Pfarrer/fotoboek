@@ -1,22 +1,26 @@
-use std::time::Instant;
+use log::info;
 use persistance::models::{File, Task};
 use persistance::FotoboekDatabase;
-use log::info;
 use shared::models::FotoboekConfig;
+use std::time::Instant;
 
 mod metadata;
 mod preview;
 
-pub async fn create_tasks_on_new_image(
+pub async fn create_tasks_on_new_file(
     db: &FotoboekDatabase,
     file: &File,
 ) -> std::result::Result<(), std::string::String> {
-    metadata::create_tasks_on_new_image(db, file).await?;
-    preview::create_tasks_on_new_image(db, file).await?;
+    metadata::create_tasks_on_new_file(db, file).await?;
+    preview::create_tasks_on_new_file(db, file).await?;
     Ok(())
 }
 
-pub async fn run_task(db: &FotoboekDatabase, config: &FotoboekConfig, task: &Task) -> Result<(), String> {
+pub async fn run_task(
+    db: &FotoboekDatabase,
+    config: &FotoboekConfig,
+    task: &Task,
+) -> Result<(), String> {
     let start_time = Instant::now();
 
     match task.module.as_str() {

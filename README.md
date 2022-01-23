@@ -24,6 +24,9 @@ volumes:
 Make sure to replace `{path-to-your-media-base-directory}` with your local path
 to the base directory containing your media files.
 
+After the container started, access `/api/admin/scan` to trigger a scan for any media files. The number of found and
+added files will be returned once the scan is finished. Depending on the number of files, this might take a while.
+
 
 ## Core Features
 - Show images in chronological order (not filename based)
@@ -34,7 +37,7 @@ to the base directory containing your media files.
 ## Open/Finished Tasks
 - JPG Image Indexing
   - [x] Index images recursively
-  - [x] Trigger index by `GET /api/scan`
+  - [x] Trigger index by `GET /api/admin/scan`
   - [ ] Trigger index on startup
   - [ ] Trigger index on filesystem events (inotify)
   - [ ] Detect removed images
@@ -42,11 +45,13 @@ to the base directory containing your media files.
   - [ ] Index videos recursively
 - User Interface & Features
   - [x] Basic Gallery
-  - [x] Preview image for folders
-  - [x] Recursive view in Gallery
+    - [x] Preview image for folders
+    - [x] Recursive view in Gallery
+    - [ ] Edit all images in a folder (date, comments)
   - [x] Basic Flashback
-  - [ ] Edit all images in a folder (date, comments)
-  - [ ] Make it pretty
+  - [x] Timeline
+    - [x] Infinite Scroll
+    - [ ] Jump to any date (buggy at the moment)
 - Worker Framework
   - [x] Create image "jobs" when new image is found
   - [x] Lock jobs when worker started working on it
@@ -60,6 +65,8 @@ to the base directory containing your media files.
   - [ ] Allow manual override of image date/order
 - Image Preview
   - [x] Generate thumbnail and preview images for JPGs
+  - [x] Optimize previews for size and quality
+
 
 ## Compile
 See Opencv prerequisites: https://github.com/twistedfall/opencv-rust

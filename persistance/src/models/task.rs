@@ -1,6 +1,7 @@
 use diesel::{self, prelude::*};
 use log::debug;
 use serde::Serialize;
+
 use shared::models::FotoboekConfig;
 
 use crate::FotoboekDatabase;
@@ -17,8 +18,8 @@ pub struct Task {
 }
 
 impl Task {
-    pub fn all(conn: &diesel::SqliteConnection) -> Vec<Task> {
-        dsl::tasks.load::<Task>(conn).expect("Query tasks failed")
+    pub async fn all(db: &FotoboekDatabase) -> Vec<Task> {
+        db.run(move |conn| dsl::tasks.load::<Task>(conn).expect("Query tasks failed")).await
     }
 
     pub async fn next_workable_by_priority_and_lock(db: &FotoboekDatabase, config: &FotoboekConfig) -> Option<Task> {
@@ -54,12 +55,14 @@ impl Task {
         }).await
     }
 
-    pub fn insert(self, conn: &diesel::SqliteConnection) -> Result<(), String> {
-        diesel::insert_into(dsl::tasks)
-            .values(&self)
-            .execute(conn)
-            .map_err(|err| err.to_string())?;
-        Ok(())
+    pub async fn insert(self, db: &FotoboekDatabase) -> Result<(), String> {
+        db.run(move |conn| {
+            diesel::insert_into(dsl::tasks)
+                .values(&self)
+                .execute(conn)
+                .map_err(|err| err.to_string())?;
+            Ok(())
+        }).await
     }
 
     pub async fn delete(self, db: &FotoboekDatabase) -> Result<usize, String> {

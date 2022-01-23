@@ -1,83 +1,201 @@
-use std::io::Read;
+use std::io::{Cursor, Read};
+
 use chrono::NaiveDateTime;
+use mp4::{Mp4Reader, TrackType};
 use opencv::imgcodecs;
 use opencv::prelude::MatTraitManual;
 use rexif::{ExifData, ExifTag};
-use log::info;
 use sha256::digest_bytes;
 
 use persistance::FotoboekDatabase;
-use persistance::models::{Task, File, FileMetadata};
-use shared::path_utils::rel_to_abs;
+use persistance::models::{File, FileMetadata, Task};
 use shared::models::FotoboekConfig;
+use shared::path_utils::rel_to_abs;
 
 pub const MODULE_ID: &str = "metadata";
 
-pub async fn create_tasks_on_new_image(db: &FotoboekDatabase, file: &File) -> Result<(), String> {
-    let file_id = file.id.unwrap();
-    db.run(move |c|
-        Task {
-            id: None,
-            file_id,
-            module: MODULE_ID.into(),
-            priority: 100,
-            work_started_at: chrono::NaiveDateTime::from_timestamp(0, 0),
-        }.insert(c)
-    ).await?;
+pub async fn create_tasks_on_new_file(db: &FotoboekDatabase, file: &File) -> Result<(), String> {
+    Task {
+        id: None,
+        file_id: file.id.unwrap(),
+        module: MODULE_ID.into(),
+        priority: 100,
+        work_started_at: chrono::NaiveDateTime::from_timestamp(0, 0),
+    }.insert(db).await?;
 
     Ok(())
 }
 
-pub async fn run_task(db: &FotoboekDatabase, config: &FotoboekConfig, task: &Task) -> Result<(), String> {
+trait MetadataExtractor {
+    fn resolution(&self) -> (i32, i32);
+    fn creation_date(&self) -> Option<NaiveDateTime>;
+    fn camera_manufacturer(&self) -> Option<String> { None }
+    fn camera_model(&self) -> Option<String> { None }
+    fn exif_aperture(&self) -> Option<String> { None }
+    fn exif_exposure_time(&self) -> Option<String> { None }
+    fn exif_iso(&self) -> Option<String> { None }
+    fn video_duration(&self) -> Option<i32> { None }
+    fn gps_lat_lon(&self) -> Option<(f32, f32)> { None }
+}
+
+struct ImageMetadataExtractor {
+    abs_path: String,
+    exif_opt: Option<ExifData>,
+}
+
+impl ImageMetadataExtractor {
+    fn parse(abs_path: &str, file_contents: &[u8]) -> Box<dyn MetadataExtractor> {
+        let exif_opt = rexif::parse_buffer_quiet(&file_contents).0.ok();
+        Box::new(ImageMetadataExtractor {
+            abs_path: abs_path.to_string(),
+            exif_opt,
+        })
+    }
+
+    fn get_exif_value(&self, tag: ExifTag) -> Option<String> {
+        self.exif_opt.as_ref().map(|exif| exif.entries
+            .iter()
+            .filter(|entry| entry.tag == tag)
+            .map(|entry| entry.value_more_readable.clone().into_owned())
+            .next()).flatten()
+    }
+}
+
+impl MetadataExtractor for ImageMetadataExtractor {
+    fn resolution(&self) -> (i32, i32) {
+        let img = imgcodecs::imread(&self.abs_path, imgcodecs::IMREAD_GRAYSCALE)
+            .expect("Image not found or invalid");
+        let size = img.size().expect("Failed to get image size");
+
+        (size.width, size.height)
+    }
+    fn creation_date(&self) -> Option<NaiveDateTime> {
+        if let Some(value) = self.get_exif_value(ExifTag::DateTime) {
+            NaiveDateTime::parse_from_str(&value, &"%Y:%m:%d %H:%M:%S").ok()
+        } else {
+            None
+        }
+    }
+    fn camera_manufacturer(&self) -> Option<String> {
+        self.get_exif_value(ExifTag::Make)
+    }
+    fn camera_model(&self) -> Option<String> {
+        self.get_exif_value(ExifTag::Model)
+    }
+    fn exif_aperture(&self) -> Option<String> {
+        self.get_exif_value(ExifTag::ApertureValue)
+    }
+    fn exif_exposure_time(&self) -> Option<String> {
+        self.get_exif_value(ExifTag::ExposureTime)
+    }
+    fn exif_iso(&self) -> Option<String> {
+        self.get_exif_value(ExifTag::ISOSpeedRatings)
+    }
+    fn gps_lat_lon(&self) -> Option<(f32, f32)> {
+        let lat_option = self.get_exif_value(ExifTag::GPSLatitude)
+            .map(|s| latlon::parse_lng(s).ok())
+            .flatten();
+        let lon_option = self.get_exif_value(ExifTag::GPSLongitude)
+            .map(|s| latlon::parse_lng(s).ok())
+            .flatten();
+
+        if let (Some(lat), Some(lon)) = (lat_option, lon_option) {
+            Some((lat as f32, lon as f32))
+        } else {
+            None
+        }
+    }
+}
+
+struct VideoMetadataExtractor {
+    mp4: Option<Mp4Reader<Cursor<Vec<u8>>>>,
+}
+
+impl VideoMetadataExtractor {
+    fn parse(file_contents: Vec<u8>) -> Box<(dyn MetadataExtractor)> {
+        let size = file_contents.len() as u64;
+        let cursor = Cursor::new(file_contents);
+        let mp4 = Mp4Reader::read_header(cursor, size).ok();
+        Box::new(VideoMetadataExtractor {
+            mp4
+        })
+    }
+}
+
+impl MetadataExtractor for VideoMetadataExtractor {
+    fn resolution(&self) -> (i32, i32) {
+        self.mp4.as_ref().map(|mp4| {
+            mp4.tracks().values()
+                .filter(|track| track.track_type().is_ok() && track.track_type().unwrap() == TrackType::Video)
+                .map(|track| (track.width() as i32, track.height() as i32))
+                .collect::<Vec<_>>()
+                .first()
+                .copied()
+        }).flatten().expect("Failed to read video resolution")
+    }
+
+    fn creation_date(&self) -> Option<NaiveDateTime> {
+        self.mp4.as_ref().map(|mp4| {
+            let mut creation_time = mp4.moov.mvhd.creation_time;
+
+            // convert from MP4 epoch (1904-01-01) to Unix epoch (1970-01-01)
+            creation_time = if creation_time >= 2082844800 {
+                creation_time - 2082844800
+            } else {
+                creation_time
+            };
+
+            NaiveDateTime::from_timestamp(creation_time as i64, 0)
+        })
+    }
+    fn video_duration(&self) -> Option<i32> {
+        self.mp4.as_ref().map(|mp4| mp4.duration().as_secs() as i32)
+    }
+}
+
+pub async fn run_task(
+    db: &FotoboekDatabase,
+    config: &FotoboekConfig,
+    task: &Task,
+) -> Result<(), String> {
     let file = File::by_id(db, task.file_id).await?;
     let abs_path = rel_to_abs(config, &file.rel_path);
 
     let (file_size_bytes, file_date) = get_file_size_and_date(&abs_path)?;
-
     let file_contents = read_file_contents(&abs_path, file_size_bytes as usize);
     let file_hash = digest_bytes(&file_contents);
-    let exif_opt = rexif::parse_buffer_quiet(&file_contents).0.ok();
-    let (exif_date, exif_gps_lat_lon) = if let Some(ref exif) = &exif_opt {
-        (
-            get_exif_date(exif).ok().flatten(),
-            get_exif_gps_lat_lon(exif),
-        )
-    } else {
-        info!("No EXIF data found for image {}", file.rel_path);
-        (None, None)
+
+    let metadata = {
+        let metadata_extractor = match file.file_type.as_str() {
+            "IMAGE" => ImageMetadataExtractor::parse(abs_path.as_str(), &file_contents),
+            "VIDEO" => VideoMetadataExtractor::parse(file_contents),
+            _ => panic!("Unsupported file type: {}", file.file_type),
+        };
+
+        let (resolution_x, resolution_y) = metadata_extractor.resolution();
+        let creation_date = metadata_extractor.creation_date();
+        let exif_gps_lat_lon = metadata_extractor.gps_lat_lon();
+
+        FileMetadata {
+            file_id: Some(task.file_id),
+            file_hash,
+            file_size_bytes,
+            file_date,
+            resolution_x,
+            resolution_y,
+            exif_date: creation_date,
+            exif_camera_manufacturer: metadata_extractor.camera_manufacturer(),
+            exif_camera_model: metadata_extractor.camera_model(),
+            exif_aperture: metadata_extractor.exif_aperture(),
+            exif_exposure_time: metadata_extractor.exif_exposure_time(),
+            exif_iso: metadata_extractor.exif_iso(),
+            exif_gps_lat: exif_gps_lat_lon.map(|lat_lon| lat_lon.0),
+            exif_gps_lon: exif_gps_lat_lon.map(|lat_lon| lat_lon.1),
+            effective_date: creation_date.unwrap_or(file_date),
+        }
     };
 
-    let (resolution_x, resolution_y) = get_image_resolution(&abs_path)?;
-
-    let metadata = FileMetadata {
-        file_id: Some(task.file_id),
-        file_hash,
-        file_size_bytes,
-        file_date,
-        resolution_x,
-        resolution_y,
-        exif_date,
-        exif_camera_manufacturer: exif_opt
-            .as_ref()
-            .and_then(|exif| get_exif_value(&exif, ExifTag::Make)),
-        exif_camera_model: exif_opt
-            .as_ref()
-            .and_then(|exif| get_exif_value(&exif, ExifTag::Model)),
-        exif_aperture: exif_opt
-            .as_ref()
-            .and_then(|exif| get_exif_value(&exif, ExifTag::ApertureValue)),
-        exif_exposure_time: exif_opt
-            .as_ref()
-            .and_then(|exif| get_exif_value(&exif, ExifTag::ExposureTime)),
-        exif_iso: exif_opt
-            .as_ref()
-            .and_then(|exif| get_exif_value(&exif, ExifTag::ISOSpeedRatings)),
-        exif_gps_lat: exif_gps_lat_lon.map(|lat_lon| lat_lon.0),
-        exif_gps_lon: exif_gps_lat_lon.map(|lat_lon| lat_lon.1),
-        effective_date: exif_date.unwrap_or(file_date),
-    };
     metadata.save(db).await?;
-
     Ok(())
 }
 
@@ -101,44 +219,4 @@ fn get_file_size_and_date(abs_path: &String) -> Result<(i32, NaiveDateTime), Str
         .into();
 
     Ok((file_size, file_date_time.naive_utc()))
-}
-
-fn get_image_resolution(abs_path: &str) -> Result<(i32, i32), String> {
-    let img = imgcodecs::imread(abs_path, imgcodecs::IMREAD_GRAYSCALE)
-        .expect("Image not found or invalid");
-    let size = img.size().expect("Failed to get image size");
-    Ok((size.width, size.height))
-}
-
-fn get_exif_value(exif: &ExifData, tag: ExifTag) -> Option<String> {
-    exif.entries
-        .iter()
-        .filter(|entry| entry.tag == tag)
-        .map(|entry| entry.value_more_readable.clone().into_owned())
-        .next()
-}
-
-fn get_exif_date(exif: &ExifData) -> Result<Option<NaiveDateTime>, String> {
-    if let Some(value) = get_exif_value(&exif, ExifTag::DateTime) {
-        let date = NaiveDateTime::parse_from_str(&value, &"%Y:%m:%d %H:%M:%S")
-            .map_err(|err| format!("Failed to parse EXIF date: {:?}", err))?;
-        return Ok(Some(date));
-    }
-
-    Ok(None)
-}
-
-fn get_exif_gps_lat_lon(exif: &ExifData) -> Option<(f32, f32)> {
-    let lat_option = get_exif_value(&exif, ExifTag::GPSLatitude)
-        .map(|s| latlon::parse_lng(s).ok())
-        .flatten();
-    let lon_option = get_exif_value(&exif, ExifTag::GPSLongitude)
-        .map(|s| latlon::parse_lng(s).ok())
-        .flatten();
-
-    if let (Some(lat), Some(lon)) = (lat_option, lon_option) {
-        Some((lat as f32, lon as f32))
-    } else {
-        None
-    }
 }
