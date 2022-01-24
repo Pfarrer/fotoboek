@@ -1,6 +1,7 @@
 use std::io::{Cursor, Read};
 
 use chrono::NaiveDateTime;
+use log::warn;
 use mp4::{Mp4Reader, TrackType};
 use opencv::imgcodecs;
 use opencv::prelude::MatTraitManual;
@@ -44,10 +45,10 @@ struct ImageMetadataExtractor {
 }
 
 impl ImageMetadataExtractor {
-    fn parse(abs_path: &str, file_contents: &[u8]) -> Box<dyn MetadataExtractor> {
+    fn parse(abs_path: String, file_contents: &[u8]) -> Box<dyn MetadataExtractor> {
         let exif_opt = rexif::parse_buffer_quiet(&file_contents).0.ok();
         Box::new(ImageMetadataExtractor {
-            abs_path: abs_path.to_string(),
+            abs_path,
             exif_opt,
         })
     }
@@ -108,30 +109,37 @@ impl MetadataExtractor for ImageMetadataExtractor {
 }
 
 struct VideoMetadataExtractor {
+    abs_path: String,
     mp4: Option<Mp4Reader<Cursor<Vec<u8>>>>,
 }
 
 impl VideoMetadataExtractor {
-    fn parse(file_contents: Vec<u8>) -> Box<(dyn MetadataExtractor)> {
+    fn parse(abs_path: String, file_contents: Vec<u8>) -> Box<(dyn MetadataExtractor)> {
         let size = file_contents.len() as u64;
         let cursor = Cursor::new(file_contents);
         let mp4 = Mp4Reader::read_header(cursor, size).ok();
         Box::new(VideoMetadataExtractor {
-            mp4
+            abs_path,
+            mp4,
         })
     }
 }
 
 impl MetadataExtractor for VideoMetadataExtractor {
     fn resolution(&self) -> (i32, i32) {
-        self.mp4.as_ref().map(|mp4| {
+        let opt = self.mp4.as_ref().map(|mp4| {
             mp4.tracks().values()
                 .filter(|track| track.track_type().is_ok() && track.track_type().unwrap() == TrackType::Video)
                 .map(|track| (track.width() as i32, track.height() as i32))
                 .collect::<Vec<_>>()
                 .first()
                 .copied()
-        }).flatten().expect("Failed to read video resolution")
+        }).flatten();
+
+        opt.unwrap_or_else(|| {
+            warn!("Could not extract resolution from video file, will use (0,0): {}", self.abs_path);
+            (0, 0)
+        })
     }
 
     fn creation_date(&self) -> Option<NaiveDateTime> {
@@ -167,8 +175,8 @@ pub async fn run_task(
 
     let metadata = {
         let metadata_extractor = match file.file_type.as_str() {
-            "IMAGE" => ImageMetadataExtractor::parse(abs_path.as_str(), &file_contents),
-            "VIDEO" => VideoMetadataExtractor::parse(file_contents),
+            "IMAGE" => ImageMetadataExtractor::parse(abs_path, &file_contents),
+            "VIDEO" => VideoMetadataExtractor::parse(abs_path, file_contents),
             _ => panic!("Unsupported file type: {}", file.file_type),
         };
 
