@@ -6,6 +6,7 @@ import {
   Output,
   EventEmitter,
 } from '@angular/core';
+import { TimelineFile } from "../timeline.component";
 
 @Component({
   selector: 'app-day-section',
@@ -17,10 +18,10 @@ export class DaySectionComponent implements OnInit {
   date: string;
 
   @Input()
-  imageIds: number[];
+  files: TimelineFile[];
 
   @Output()
-  imageClick = new EventEmitter<number>();
+  imageClick = new EventEmitter<TimelineFile>();
 
   constructor(public elementRef: ElementRef) {}
 

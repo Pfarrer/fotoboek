@@ -1,0 +1,16 @@
+.media {
+  display: inline-block;
+  width: 200px;
+  height: 200px;
+  background-size: cover;
+  cursor: pointer;
+  margin-right: 5px;
+
+  .material-icons {
+    margin-top: 100px;
+    margin-left: 100px;
+    transform: translate(-50%, -50%);
+    font-size: 100px;
+    color: white;
+  }
+}

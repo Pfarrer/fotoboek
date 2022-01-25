@@ -34,3 +34,8 @@ img.preview {
   cursor: pointer;
   margin: 0.1em;
 }
+
+// Bugfix in Lightgallery: Videos are not shown because this ::before element takes their place
+.lg-show .lg-outer .lg-item::before {
+  display: none;
+}

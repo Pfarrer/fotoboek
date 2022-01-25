@@ -173,13 +173,21 @@ mod video {
         if cap.read(&mut frame).unwrap_or(false) {
             let resized_small = image::resize_by_cv_mat(&frame, &PreviewSize::Small)
                 .expect("Resize failed");
-
             fs::store_preview(
                 config,
                 file_hash,
                 &PreviewSize::Small,
                 &resized_small
             ).expect("Store video small preview failed");
+
+            let resized_large = image::resize_by_cv_mat(&frame, &PreviewSize::Large)
+                .expect("Resize failed");
+            fs::store_preview(
+                config,
+                file_hash,
+                &PreviewSize::Large,
+                &resized_large
+            ).expect("Store video large preview failed");
         } else {
             warn!("Could not read video frames, skipping preview generation for: {}", abs_path);
         }

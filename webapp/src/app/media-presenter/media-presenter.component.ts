@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { MediaPresenterService } from './media-presenter.service';
 import { LightGallery } from "lightgallery/lightgallery";
 import lgZoom from 'lightgallery/plugins/zoom';
+import lgVideo from 'lightgallery/plugins/video';
 import { InitDetail } from "lightgallery/lg-events";
 import { GalleryItem } from "lightgallery/lg-utils";
+import { LightGallerySettings } from "lightgallery/lg-settings";
 
 @Component({
   selector: 'app-media-presenter',
@@ -16,8 +18,8 @@ export class MediaPresenterComponent implements OnInit {
   settings = {
     counter: false,
     loop: false,
-    plugins: [lgZoom]
-  };
+    plugins: [lgVideo, lgZoom],
+  } as LightGallerySettings;
 
   onLightGalleryInit = (detail: InitDetail): void => {
     this.lightGallery = detail.instance;
@@ -32,7 +34,7 @@ export class MediaPresenterComponent implements OnInit {
   }
 
   startPresentation(items: GalleryItem[], startIndex: number) {
-    this.lightGallery.galleryItems = items;
+    this.lightGallery.refresh(items);
     this.lightGallery.openGallery(startIndex);
   }
 }

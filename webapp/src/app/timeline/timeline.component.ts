@@ -4,7 +4,8 @@ import { DaySectionComponent } from './day-section/day-section.component';
 import { MediaPresenterService } from '../media-presenter/media-presenter.service';
 
 export type TimelineDates = string[];
-export type DateImageIds = { [date: string]: number[] };
+export type TimelineFiles = { [date: string]: TimelineFile[] };
+export type TimelineFile = { id: number, type: 'IMAGE' | 'VIDEO' };
 
 declare var M: any;
 
@@ -19,7 +20,7 @@ export class TimelineComponent implements OnInit {
 
   allTimelineDates: TimelineDates = null;
   timelineDates: TimelineDates = null;
-  dateImageIds: DateImageIds = null;
+  timelineFiles: TimelineFiles = null;
   infiniteScrollManager: InfiniteScrollManager = null;
 
   scrollSpyInstances: any = null;
@@ -33,7 +34,7 @@ export class TimelineComponent implements OnInit {
 
   ngOnInit(): void {
     this.http.get('/api/timeline/dates').subscribe((dateImageIds) => {
-      this.dateImageIds = dateImageIds as DateImageIds;
+      this.timelineFiles = dateImageIds as TimelineFiles;
       this.allTimelineDates = Object.keys(dateImageIds).reverse();
 
       const estimatedNumberOfVisibleSections = TimelineComponent.estimatedNumberOfVisibleSections();
@@ -69,18 +70,18 @@ export class TimelineComponent implements OnInit {
     return Math.ceil(windowHeight / 100);
   }
 
-  onImageClick(imageId: number) {
-    const imageIds = this.timelineDates.reduce((arr, date) => {
+  onImageClick(file: TimelineFile) {
+    const files = this.timelineDates.reduce((arr, date) => {
       return [
         ...arr,
-        ...this.dateImageIds[date]
+        ...this.timelineFiles[date]
       ]
-    }, []);
+    }, [] as TimelineFile[]);
 
-    const startIndex = imageIds.indexOf(imageId);
-    const items = imageIds.map(imageId => ({
-      src: `/api/images/${imageId}?size=large`,
-    }));
+    const items = files.map(file => this.mediaPresenterService.mapToGalleryItem(
+      file.type, file.id
+    ));
+    const startIndex = files.indexOf(file);
     this.mediaPresenterService.startPresentation(items, startIndex);
   }
 
@@ -115,7 +116,6 @@ class InfiniteScrollManager {
     if (this.visibleRangeBottom - this.visibleRangeTop > this.maxRange) {
       this.visibleRangeBottom = this.visibleRangeTop + this.maxRange;
     }
-    console.log(`Extend top, new range: [${this.visibleRangeTop}, ${this.visibleRangeBottom}]`)
     return this.dates.slice(this.visibleRangeTop, this.visibleRangeBottom);
   }
 
@@ -124,7 +124,6 @@ class InfiniteScrollManager {
     if (this.visibleRangeBottom - this.visibleRangeTop > this.maxRange) {
       this.visibleRangeTop = this.visibleRangeBottom - this.maxRange;
     }
-    console.log(`Extend bottom, new range: [${this.visibleRangeTop}, ${this.visibleRangeBottom}]`)
     return this.dates.slice(this.visibleRangeTop, this.visibleRangeBottom);
   }
 

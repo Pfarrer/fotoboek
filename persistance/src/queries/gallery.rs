@@ -20,17 +20,17 @@ pub struct GalleryFileInfo {
 pub async fn get_gallery_file_infos(db: &FotoboekDatabase) -> Vec<GalleryFileInfo> {
     db.run(move |conn| {
         let sql = r#"
-           SELECT
-               files.id AS file_id,
-               files.rel_path AS rel_path,
-               files.file_name AS file_name,
-               files.file_type AS file_type,
-               file_metadata.effective_date AS effective_date
-           FROM files
-           INNER JOIN file_metadata
-               ON files.id = file_metadata.file_id
-           ORDER BY file_metadata.effective_date
-       "#;
+            SELECT
+                files.id AS file_id,
+                files.rel_path AS rel_path,
+                files.file_name AS file_name,
+                files.file_type AS file_type,
+                file_metadata.effective_date AS effective_date
+            FROM files
+            INNER JOIN file_metadata
+                ON files.id = file_metadata.file_id
+            ORDER BY file_metadata.effective_date
+        "#;
 
         diesel::sql_query(sql)
             .load(conn)

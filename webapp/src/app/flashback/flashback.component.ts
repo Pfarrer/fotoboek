@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { MediaPresenterService } from '../media-presenter/media-presenter.service';
 
 type FlashbackDates = string[];
-type DateImageIds = { [date: string]: number[] };
+type FlashbackFiles = { [date: string]: FlashbackFile[] };
+export type FlashbackFile = { id: number, type: 'IMAGE' | 'VIDEO' };
 
 @Component({
   selector: 'app-flashback',
@@ -12,7 +13,7 @@ type DateImageIds = { [date: string]: number[] };
 })
 export class FlashbackComponent implements OnInit {
   flashbackDates: FlashbackDates = null;
-  dateImageIds: DateImageIds = null;
+  flashbackFiles: FlashbackFiles = null;
 
   constructor(
     private http: HttpClient,
@@ -23,7 +24,7 @@ export class FlashbackComponent implements OnInit {
   ngOnInit(): void {
     this.http.get('/api/flashback/dates').subscribe((dateImageIds) => {
       this.flashbackDates = Object.keys(dateImageIds).reverse();
-      this.dateImageIds = dateImageIds as DateImageIds;
+      this.flashbackFiles = dateImageIds as FlashbackFiles;
     });
   }
 
@@ -31,12 +32,10 @@ export class FlashbackComponent implements OnInit {
     return this.flashbackDates !== null && this.flashbackDates.length > 0;
   }
 
-  onImageClick(date: string, imageId: number) {
-    const imageIds = this.dateImageIds[date];
-    const startIndex = imageIds.indexOf(imageId);
-    const items = imageIds.map(imageId => ({
-      src: `/api/images/${imageId}?size=large`,
-    }));
+  onImageClick(date: string, file: FlashbackFile) {
+    const files = this.flashbackFiles[date];
+    const startIndex = files.indexOf(file);
+    const items = files.map(file => this.mediaPresenterService.mapToGalleryItem(file.type, file.id));
     this.mediaPresenterService.startPresentation(items, startIndex);
   }
 }

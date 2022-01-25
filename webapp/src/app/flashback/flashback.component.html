@@ -2,12 +2,12 @@
   <div *ngFor="let date of flashbackDates" class="flashback">
     <h2>{{ date | flashbackDateFormatter }}</h2>
     <div class="media">
-      <img
-        *ngFor="let imageId of dateImageIds[date]"
-        (click)="onImageClick(date, imageId)"
-        src="/api/images/{{ imageId }}?size=small"
-        class="preview fade-in"
-      />
+      <app-media-preview
+        *ngFor="let file of flashbackFiles[date]"
+        [file_id]="file.id"
+        [file_type]="file.type"
+        (click)="onImageClick(date, file)"
+      ></app-media-preview>
     </div>
   </div>
 </div>

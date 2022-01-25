@@ -18,6 +18,7 @@ import { GeoComponent } from './geo/geo.component';
 import { StatsComponent } from './stats/stats.component';
 import { FlashbackDateFormatterPipe } from './flashback/flashback-date-formatter.pipe';
 import { LightgalleryModule } from "lightgallery/angular/10";
+import { MediaPreviewComponent } from './media-preview/media-preview.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { LightgalleryModule } from "lightgallery/angular/10";
     GeoComponent,
     StatsComponent,
     FlashbackDateFormatterPipe,
+    MediaPreviewComponent,
   ],
   imports: [
     BrowserModule,

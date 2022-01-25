@@ -45,9 +45,15 @@
           *ngFor="let file of get_visible_files()"
           (click)="onFileClick(file)"
         >
-          <td><i class="material-icons">image</i></td>
+          <td>
+            <i *ngIf="file.file_type === 'IMAGE'" class="material-icons">image</i>
+            <i *ngIf="file.file_type === 'VIDEO'" class="material-icons">movie</i>
+          </td>
           <td class="file-preview">
-            <img src="/api/images/{{ file.id }}?size=small" class="fade-in" />
+            <app-media-preview
+              [file_id]="file.id"
+              [file_type]="file.file_type"
+            ></app-media-preview>
           </td>
           <td>{{ file.file_name }}</td>
           <td>{{ file.effective_date | date:'medium' }}</td>

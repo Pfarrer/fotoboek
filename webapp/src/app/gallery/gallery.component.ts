@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MediaPresenterService } from '../media-presenter/media-presenter.service';
+import { GalleryItem } from "lightgallery/lg-utils";
+import { VideoInfo } from "lightgallery/types";
 
 export interface GalleryPath {
   sub_paths: { [name: string]: GalleryPath };
@@ -11,7 +13,7 @@ export interface GalleryPath {
 export interface GalleryFile {
   id: number;
   file_name: string;
-  file_type: 'IMAGE';
+  file_type: 'IMAGE' | 'VIDEO';
   effective_date: string;
 }
 
@@ -135,12 +137,8 @@ export class GalleryComponent implements OnInit {
     const files = this.get_visible_files();
 
     const startIndex = files.indexOf(file);
-    const items = files.map((file: GalleryFile) => (
-      {
-        src: `/api/images/${file.id}?size=large`,
-        thumb: `/api/images/${file.id}?size=small`,
-        subHtml: file.file_name,
-      }
+    const items = files.map((file: GalleryFile) => this.mediaPresenterService.mapToGalleryItem(
+      file.file_type, file.id
     ));
 
     this.mediaPresenterService.startPresentation(items, startIndex);

@@ -5,7 +5,7 @@
       *ngFor="let date of timelineDates; let i = index"
       (imageClick)="onImageClick($event)"
       [date]="date"
-      [imageIds]="dateImageIds[date]"
+      [files]="timelineFiles[date]"
       [attr.data-index]="i"
       class="section scrollspy"
       id="section-{{ date }}"
