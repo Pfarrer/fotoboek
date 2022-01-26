@@ -1,4 +1,4 @@
-FROM rust:bullseye AS rust-builder
+FROM pfarrer/fotoboek-builder:lastest AS rust-builder
 
 RUN ln -s /usr/bin/dpkg-split /usr/sbin/dpkg-split
 RUN ln -s /usr/bin/dpkg-deb /usr/sbin/dpkg-deb
@@ -21,7 +21,7 @@ COPY webapp/ .
 RUN npm install
 RUN npm run build
 
-FROM rust:slim-bullseye as runtime
+FROM pfarrer/fotoboek-runtime:lastest AS runtime
 
 RUN ln -s /usr/bin/dpkg-split /usr/sbin/dpkg-split
 RUN ln -s /usr/bin/dpkg-deb /usr/sbin/dpkg-deb
