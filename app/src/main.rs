@@ -5,10 +5,10 @@ extern crate core;
 use dotenv::dotenv;
 use persistance::fs;
 
-mod web;
 mod api;
-mod internal;
 mod config_parser;
+mod internal;
+mod web;
 
 #[rocket::main]
 async fn main() {

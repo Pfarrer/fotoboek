@@ -8,8 +8,8 @@ use opencv::prelude::MatTraitManual;
 use rexif::{ExifData, ExifTag};
 use sha256::digest_bytes;
 
-use persistance::FotoboekDatabase;
 use persistance::models::{File, FileMetadata, Task};
+use persistance::FotoboekDatabase;
 use shared::models::FotoboekConfig;
 use shared::path_utils::rel_to_abs;
 
@@ -22,7 +22,9 @@ pub async fn create_tasks_on_new_file(db: &FotoboekDatabase, file: &File) -> Res
         module: MODULE_ID.into(),
         priority: 100,
         work_started_at: chrono::NaiveDateTime::from_timestamp(0, 0),
-    }.insert(db).await?;
+    }
+    .insert(db)
+    .await?;
 
     Ok(())
 }
@@ -30,13 +32,27 @@ pub async fn create_tasks_on_new_file(db: &FotoboekDatabase, file: &File) -> Res
 trait MetadataExtractor {
     fn resolution(&self) -> (i32, i32);
     fn creation_date(&self) -> Option<NaiveDateTime>;
-    fn camera_manufacturer(&self) -> Option<String> { None }
-    fn camera_model(&self) -> Option<String> { None }
-    fn exif_aperture(&self) -> Option<String> { None }
-    fn exif_exposure_time(&self) -> Option<String> { None }
-    fn exif_iso(&self) -> Option<String> { None }
-    fn video_duration(&self) -> Option<i32> { None }
-    fn gps_lat_lon(&self) -> Option<(f32, f32)> { None }
+    fn camera_manufacturer(&self) -> Option<String> {
+        None
+    }
+    fn camera_model(&self) -> Option<String> {
+        None
+    }
+    fn exif_aperture(&self) -> Option<String> {
+        None
+    }
+    fn exif_exposure_time(&self) -> Option<String> {
+        None
+    }
+    fn exif_iso(&self) -> Option<String> {
+        None
+    }
+    fn video_duration(&self) -> Option<i32> {
+        None
+    }
+    fn gps_lat_lon(&self) -> Option<(f32, f32)> {
+        None
+    }
 }
 
 struct ImageMetadataExtractor {
@@ -47,18 +63,20 @@ struct ImageMetadataExtractor {
 impl ImageMetadataExtractor {
     fn parse(abs_path: String, file_contents: &[u8]) -> Box<dyn MetadataExtractor> {
         let exif_opt = rexif::parse_buffer_quiet(&file_contents).0.ok();
-        Box::new(ImageMetadataExtractor {
-            abs_path,
-            exif_opt,
-        })
+        Box::new(ImageMetadataExtractor { abs_path, exif_opt })
     }
 
     fn get_exif_value(&self, tag: ExifTag) -> Option<String> {
-        self.exif_opt.as_ref().map(|exif| exif.entries
-            .iter()
-            .filter(|entry| entry.tag == tag)
-            .map(|entry| entry.value_more_readable.clone().into_owned())
-            .next()).flatten()
+        self.exif_opt
+            .as_ref()
+            .map(|exif| {
+                exif.entries
+                    .iter()
+                    .filter(|entry| entry.tag == tag)
+                    .map(|entry| entry.value_more_readable.clone().into_owned())
+                    .next()
+            })
+            .flatten()
     }
 }
 
@@ -93,10 +111,12 @@ impl MetadataExtractor for ImageMetadataExtractor {
         self.get_exif_value(ExifTag::ISOSpeedRatings)
     }
     fn gps_lat_lon(&self) -> Option<(f32, f32)> {
-        let lat_option = self.get_exif_value(ExifTag::GPSLatitude)
+        let lat_option = self
+            .get_exif_value(ExifTag::GPSLatitude)
             .map(|s| latlon::parse_lng(s).ok())
             .flatten();
-        let lon_option = self.get_exif_value(ExifTag::GPSLongitude)
+        let lon_option = self
+            .get_exif_value(ExifTag::GPSLongitude)
             .map(|s| latlon::parse_lng(s).ok())
             .flatten();
 
@@ -118,26 +138,34 @@ impl VideoMetadataExtractor {
         let size = file_contents.len() as u64;
         let cursor = Cursor::new(file_contents);
         let mp4 = Mp4Reader::read_header(cursor, size).ok();
-        Box::new(VideoMetadataExtractor {
-            abs_path,
-            mp4,
-        })
+        Box::new(VideoMetadataExtractor { abs_path, mp4 })
     }
 }
 
 impl MetadataExtractor for VideoMetadataExtractor {
     fn resolution(&self) -> (i32, i32) {
-        let opt = self.mp4.as_ref().map(|mp4| {
-            mp4.tracks().values()
-                .filter(|track| track.track_type().is_ok() && track.track_type().unwrap() == TrackType::Video)
-                .map(|track| (track.width() as i32, track.height() as i32))
-                .collect::<Vec<_>>()
-                .first()
-                .copied()
-        }).flatten();
+        let opt = self
+            .mp4
+            .as_ref()
+            .map(|mp4| {
+                mp4.tracks()
+                    .values()
+                    .filter(|track| {
+                        track.track_type().is_ok()
+                            && track.track_type().unwrap() == TrackType::Video
+                    })
+                    .map(|track| (track.width() as i32, track.height() as i32))
+                    .collect::<Vec<_>>()
+                    .first()
+                    .copied()
+            })
+            .flatten();
 
         opt.unwrap_or_else(|| {
-            warn!("Could not extract resolution from video file, will use (0,0): {}", self.abs_path);
+            warn!(
+                "Could not extract resolution from video file, will use (0,0): {}",
+                self.abs_path
+            );
             (0, 0)
         })
     }

@@ -1,8 +1,8 @@
 use crate::internal::naive_date_time_rocket::NaiveDateTimeRocket;
-use persistance::FotoboekDatabase;
-use rocket::serde::json::Json;
 use persistance::queries::timeline;
 use persistance::queries::timeline::TimelineDates;
+use persistance::FotoboekDatabase;
+use rocket::serde::json::Json;
 
 #[derive(Debug, FromFormField)]
 pub enum Direction {

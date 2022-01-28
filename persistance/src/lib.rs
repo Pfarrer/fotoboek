@@ -4,11 +4,11 @@ extern crate diesel;
 extern crate diesel_migrations;
 
 pub mod fs;
+mod migrations;
 pub mod models;
 pub mod queries;
-mod sqlite;
 mod schema;
-mod migrations;
+mod sqlite;
 
-pub use sqlite::FotoboekDatabase;
 pub use migrations::migration_fairing;
+pub use sqlite::FotoboekDatabase;

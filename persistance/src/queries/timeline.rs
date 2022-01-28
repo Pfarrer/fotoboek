@@ -1,8 +1,8 @@
-use crate::FotoboekDatabase;
-use std::collections::BTreeMap;
-use serde::Serialize;
 use crate::diesel::RunQueryDsl;
+use crate::FotoboekDatabase;
 use diesel::sql_types::{Integer, Text};
+use serde::Serialize;
+use std::collections::BTreeMap;
 
 #[derive(Serialize)]
 pub struct TimelineFileInfo {
@@ -38,14 +38,13 @@ pub async fn dates(db: FotoboekDatabase) -> TimelineDates {
             .expect("Query timeline.dates failed");
 
         image_dates.iter().fold(BTreeMap::new(), |mut map, it| {
-            let entry = map
-                .entry(it.date.clone())
-                .or_insert(Vec::new());
+            let entry = map.entry(it.date.clone()).or_insert(Vec::new());
             entry.push(TimelineFileInfo {
                 id: it.file_id,
-                r#type: it.file_type.clone()
+                r#type: it.file_type.clone(),
             });
             return map;
         })
-    }).await
+    })
+    .await
 }

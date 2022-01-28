@@ -1,9 +1,9 @@
+use log::{debug, error};
 use persistance::models::Task;
 use persistance::FotoboekDatabase;
+use shared::models::FotoboekConfig;
 use tokio::task;
 use tokio::time::{sleep, Duration};
-use log::{debug, error};
-use shared::models::FotoboekConfig;
 
 pub fn spawn(db: FotoboekDatabase, config: &FotoboekConfig, worker_id: usize) {
     let config_copy = config.clone();

@@ -16,12 +16,3 @@ pub enum PreviewSize {
     #[strum(serialize = "small")]
     Small,
 }
-
-impl PreviewSize {
-    pub fn to_max_pixels(self: &PreviewSize) -> usize {
-        match self {
-            PreviewSize::Large => 2000,
-            PreviewSize::Small => 200,
-        }
-    }
-}

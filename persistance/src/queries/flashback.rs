@@ -1,9 +1,9 @@
-use crate::FotoboekDatabase;
-use std::collections::BTreeMap;
-use serde::Serialize;
-use chrono::{Datelike, Local};
 use crate::diesel::RunQueryDsl;
+use crate::FotoboekDatabase;
+use chrono::{Datelike, Local};
 use diesel::sql_types::{Integer, Text};
+use serde::Serialize;
+use std::collections::BTreeMap;
 
 #[derive(Serialize)]
 pub struct FlashbackFileInfo {
@@ -45,14 +45,13 @@ pub async fn dates(db: FotoboekDatabase) -> FlashbackDates {
             .expect("Query flashback.dates failed");
 
         image_dates.iter().fold(BTreeMap::new(), |mut map, it| {
-            let entry = map
-                .entry(it.date.clone())
-                .or_insert(Vec::new());
+            let entry = map.entry(it.date.clone()).or_insert(Vec::new());
             entry.push(FlashbackFileInfo {
                 id: it.file_id,
                 r#type: it.file_type.clone(),
             });
             return map;
         })
-    }).await
+    })
+    .await
 }

@@ -12,16 +12,17 @@ pub fn store_preview(
     config: &FotoboekConfig,
     file_hash: &String,
     preview_size: &PreviewSize,
-    preview_bytes: &Vec<u8>
+    preview_bytes: &Vec<u8>,
 ) -> Result<(), String> {
     assert_eq!(file_hash.len(), 64);
 
     // Make sure, the directory exists
     fs::create_dir_all(preview_dir_path(config, file_hash)).unwrap();
 
-    let file_path = preview_file_path(config, file_hash,  preview_size);
+    let file_path = preview_file_path(config, file_hash, preview_size);
     let mut file = File::create(file_path).map_err(|err| err.to_string())?;
-    file.write_all(preview_bytes).map_err(|err| err.to_string())?;
+    file.write_all(preview_bytes)
+        .map_err(|err| err.to_string())?;
     file.flush().map_err(|err| err.to_string())?;
 
     Ok(())
@@ -39,10 +40,19 @@ fn preview_dir_path(config: &FotoboekConfig, file_hash: &String) -> String {
 }
 
 /// Returns the path to the preview file for the given arguments.
-pub fn preview_file_path(config: &FotoboekConfig, file_hash: &String, preview_size: &PreviewSize) -> String {
+pub fn preview_file_path(
+    config: &FotoboekConfig,
+    file_hash: &String,
+    preview_size: &PreviewSize,
+) -> String {
     let size_prefix = match preview_size {
         PreviewSize::Small => "small",
         PreviewSize::Large => "large",
     };
-    format!("{}/{}-{}.webp", preview_dir_path(config, file_hash), size_prefix, file_hash)
+    format!(
+        "{}/{}-{}.webp",
+        preview_dir_path(config, file_hash),
+        size_prefix,
+        file_hash
+    )
 }

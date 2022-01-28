@@ -1,10 +1,10 @@
+use chrono::NaiveDateTime;
 use diesel::{self, prelude::*};
 use serde::Serialize;
-use chrono::NaiveDateTime;
 
-use crate::FotoboekDatabase;
 use crate::schema::file_metadata;
 use crate::schema::file_metadata::dsl;
+use crate::FotoboekDatabase;
 
 #[derive(Insertable, Queryable, QueryableByName, Serialize, Debug)]
 #[table_name = "file_metadata"]
@@ -33,16 +33,20 @@ impl FileMetadata {
                 .filter(dsl::file_id.eq(file_id))
                 .first::<FileMetadata>(conn)
                 .ok()
-        }).await
+        })
+        .await
     }
 
     pub async fn save(self, db: &FotoboekDatabase) -> Result<(), String> {
-        db.run(move |conn|
+        db.run(move |conn| {
             conn.immediate_transaction(|| {
-                diesel::replace_into(dsl::file_metadata).values(&self).execute(conn)?;
+                diesel::replace_into(dsl::file_metadata)
+                    .values(&self)
+                    .execute(conn)?;
                 Ok(())
             })
-                .map_err(|err: diesel::result::Error| err.to_string())
-        ).await
+            .map_err(|err: diesel::result::Error| err.to_string())
+        })
+        .await
     }
 }

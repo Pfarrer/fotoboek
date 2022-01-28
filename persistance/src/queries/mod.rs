@@ -1,3 +1,3 @@
-pub mod timeline;
-pub mod gallery;
 pub mod flashback;
+pub mod gallery;
+pub mod timeline;

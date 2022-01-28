@@ -1,5 +1,5 @@
-use rocket::form::{self, FromFormField, DataField, ValueField};
 use chrono::NaiveDateTime;
+use rocket::form::{self, DataField, FromFormField, ValueField};
 
 #[derive(Debug)]
 pub struct NaiveDateTimeRocket(NaiveDateTime);
@@ -11,7 +11,9 @@ impl<'r> FromFormField<'r> for NaiveDateTimeRocket {
         let result = NaiveDateTime::parse_from_str(field.value, "%Y-%m-%dT%H:%M:%S");
         match result {
             Ok(val) => Ok(NaiveDateTimeRocket(val)),
-            Err(_) => Err(form::Error::validation("not a valid date time (expected format %Y-%m-%dT%H:%M:%S)"))?
+            Err(_) => Err(form::Error::validation(
+                "not a valid date time (expected format %Y-%m-%dT%H:%M:%S)",
+            ))?,
         }
     }
 

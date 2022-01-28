@@ -1,6 +1,6 @@
-use std::path::Path;
 use rocket::fairing::AdHoc;
 use rocket::fs::FileServer;
+use std::path::Path;
 
 use crate::api;
 use persistance::FotoboekDatabase;
@@ -9,7 +9,10 @@ use shared::models::FotoboekConfig;
 pub async fn init(config: &FotoboekConfig) {
     rocket::build()
         .attach(FotoboekDatabase::fairing())
-        .attach(AdHoc::try_on_ignite("Database Migrations", persistance::migration_fairing))
+        .attach(AdHoc::try_on_ignite(
+            "Database Migrations",
+            persistance::migration_fairing,
+        ))
         .attach(worker_thread_fairing(config))
         .manage(config.clone())
         .mount("/api", api::routes())

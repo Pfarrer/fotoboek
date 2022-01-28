@@ -1,8 +1,8 @@
 mod admin;
+mod flashback;
+mod gallery;
 mod images;
 mod timeline;
-mod gallery;
-mod flashback;
 
 pub fn routes() -> Vec<rocket::Route> {
     routes![

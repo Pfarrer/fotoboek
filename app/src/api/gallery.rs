@@ -1,11 +1,11 @@
-use std::collections::HashMap;
-use std::path::Path;
 use chrono::NaiveDateTime;
-use persistance::FotoboekDatabase;
-use rocket::serde::json::Json;
 use persistance::queries::gallery;
 use persistance::queries::gallery::GalleryFileInfo;
+use persistance::FotoboekDatabase;
+use rocket::serde::json::Json;
 use serde::Serialize;
+use std::collections::HashMap;
+use std::path::Path;
 
 #[get("/gallery/paths")]
 pub async fn get_paths(db: FotoboekDatabase) -> Json<GalleryPath> {
@@ -44,18 +44,22 @@ fn create_gallery_path_structure(file_infos: Vec<GalleryFileInfo>) -> GalleryPat
 
     file_infos.iter().for_each(|file_info| {
         let path = Path::new(&file_info.rel_path);
-        let sub_paths: Vec<_> = path.ancestors()
+        let sub_paths: Vec<_> = path
+            .ancestors()
             .skip(1)
             .filter(|subpath| !empty_path.eq(*subpath))
             .collect();
 
-        let matching_gallery_item = sub_paths.iter()
-            .rev()
-            .fold(&mut gallery_root, |gallery_item, sub_path| {
-                gallery_item.sub_paths
-                    .entry(sub_path.file_name().unwrap().to_str().unwrap().to_string())
-                    .or_insert(GalleryPath::empty())
-            });
+        let matching_gallery_item =
+            sub_paths
+                .iter()
+                .rev()
+                .fold(&mut gallery_root, |gallery_item, sub_path| {
+                    gallery_item
+                        .sub_paths
+                        .entry(sub_path.file_name().unwrap().to_str().unwrap().to_string())
+                        .or_insert(GalleryPath::empty())
+                });
 
         let gallery_file = create_gallery_file(&file_info);
         matching_gallery_item.files.push(gallery_file);
