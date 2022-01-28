@@ -1,4 +1,4 @@
-use persistance::models::{File, FileMetadata};
+use persistance::models::{FileMetadata};
 use persistance::{fs, FotoboekDatabase};
 use rocket::fs::NamedFile;
 use rocket::State;
@@ -9,7 +9,6 @@ use std::path::Path;
 pub enum RestImageSize {
     Large,
     Small,
-    Original,
 }
 
 impl RestImageSize {
@@ -17,7 +16,6 @@ impl RestImageSize {
         match self {
             RestImageSize::Large => PreviewSize::Large,
             RestImageSize::Small => PreviewSize::Small,
-            RestImageSize::Original => panic!("Not mappable"),
         }
     }
 }
@@ -29,15 +27,7 @@ pub async fn image_by_id_and_size(
     file_id: i32,
     size: RestImageSize,
 ) -> Option<NamedFile> {
-    let path = match &size {
-        RestImageSize::Original => {
-            let file = File::by_id(&db, file_id).await.ok()?;
-            format!("{}/{}", config.media_source_path, file.rel_path)
-        }
-        _ => {
-            let metadata = FileMetadata::by_file_id(&db, file_id).await?;
-            fs::preview_file_path(config, &metadata.file_hash, &size.to_preview_size())
-        }
-    };
+    let metadata = FileMetadata::by_file_id(&db, file_id).await?;
+    let path = fs::file_preview_path(config, &metadata.file_hash, &size.to_preview_size());
     NamedFile::open(Path::new(&path)).await.ok()
 }
