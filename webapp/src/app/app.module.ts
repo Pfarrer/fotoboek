@@ -17,7 +17,7 @@ import { PeopleComponent } from './people/people.component';
 import { GeoComponent } from './geo/geo.component';
 import { StatsComponent } from './stats/stats.component';
 import { FlashbackDateFormatterPipe } from './flashback/flashback-date-formatter.pipe';
-import { LightgalleryModule } from "lightgallery/angular/10";
+import { LightgalleryModule } from "lightgallery/angular";
 import { MediaPreviewComponent } from './media-preview/media-preview.component';
 
 @NgModule({
