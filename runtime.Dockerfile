@@ -10,4 +10,5 @@ RUN apt-get update \
         libsqlite3-0 libopencv-contrib4.5 \
         libopencv-superres4.5 libopencv-videostab4.5 \
         libopencv-stitching4.5 libopencv-shape4.5 \
+        ffmpeg \
     && rm -rf /var/lib/apt/lists/*
