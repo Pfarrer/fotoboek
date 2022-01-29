@@ -1,14 +1,4 @@
-FROM pfarrer/fotoboek-builder:lastest AS rust-builder
-
-RUN ln -s /usr/bin/dpkg-split /usr/sbin/dpkg-split
-RUN ln -s /usr/bin/dpkg-deb /usr/sbin/dpkg-deb
-RUN ln -s /bin/rm /usr/sbin/rm
-RUN ln -s /bin/tar /usr/sbin/tar
-
-RUN apt-get update \
-    && apt-get install -y \
-        libsqlite3-dev libopencv-dev \
-        llvm-dev clang libclang-dev
+FROM pfarrer/fotoboek-builder:latest AS rust-builder
 
 WORKDIR /opt/fotoboek
 COPY . .
@@ -21,19 +11,7 @@ COPY webapp/ .
 RUN npm install
 RUN npm run build
 
-FROM pfarrer/fotoboek-runtime:lastest AS runtime
-
-RUN ln -s /usr/bin/dpkg-split /usr/sbin/dpkg-split
-RUN ln -s /usr/bin/dpkg-deb /usr/sbin/dpkg-deb
-RUN ln -s /bin/rm /usr/sbin/rm
-RUN ln -s /bin/tar /usr/sbin/tar
-
-RUN apt-get update \
-    && apt-get install -y \
-        libsqlite3-0 libopencv-contrib4.5 \
-        libopencv-superres4.5 libopencv-videostab4.5 \
-        libopencv-stitching4.5 libopencv-shape4.5 \
-    && rm -rf /var/lib/apt/lists/*
+FROM pfarrer/fotoboek-runtime:latest AS runtime
 
 WORKDIR /opt/fotoboek
 
