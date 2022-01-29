@@ -1,4 +1,4 @@
-FROM pfarrer/fotoboek-builder:lastest AS rust-builder
+FROM pfarrer/fotoboek-builder:latest AS rust-builder
 
 RUN ln -s /usr/bin/dpkg-split /usr/sbin/dpkg-split
 RUN ln -s /usr/bin/dpkg-deb /usr/sbin/dpkg-deb
@@ -21,7 +21,7 @@ COPY webapp/ .
 RUN npm install
 RUN npm run build
 
-FROM pfarrer/fotoboek-runtime:lastest AS runtime
+FROM pfarrer/fotoboek-runtime:latest AS runtime
 
 RUN ln -s /usr/bin/dpkg-split /usr/sbin/dpkg-split
 RUN ln -s /usr/bin/dpkg-deb /usr/sbin/dpkg-deb
