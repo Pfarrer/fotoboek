@@ -15,6 +15,7 @@ pub struct Task {
     pub module: String,
     pub priority: i32,
     pub work_started_at: chrono::NaiveDateTime,
+    pub max_worker_id: i32,
 }
 
 impl Task {
@@ -26,6 +27,7 @@ impl Task {
     pub async fn next_workable_by_priority_and_lock(
         db: &FotoboekDatabase,
         config: &FotoboekConfig,
+        worker_id: usize,
     ) -> Option<Task> {
         let dt_now = chrono::Utc::now().naive_utc();
         let dt_one_hour_ago = chrono::NaiveDateTime::from_timestamp(
@@ -35,7 +37,8 @@ impl Task {
 
         db.run(move |conn| loop {
             let workable_tasks: Vec<Task> = dsl::tasks
-                .filter(dsl::work_started_at.le(dt_one_hour_ago))
+                .filter(dsl::work_started_at.le(dt_one_hour_ago)
+                    .and(dsl::max_worker_id.ge(worker_id as i32)))
                 .order(dsl::priority.asc())
                 .limit(1)
                 .load::<Task>(conn)

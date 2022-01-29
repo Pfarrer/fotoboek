@@ -6,6 +6,7 @@ use std::time::Instant;
 
 mod metadata;
 mod preview;
+mod transcode;
 
 pub async fn create_tasks_on_new_file(
     db: &FotoboekDatabase,
@@ -13,6 +14,7 @@ pub async fn create_tasks_on_new_file(
 ) -> std::result::Result<(), std::string::String> {
     metadata::create_tasks_on_new_file(db, file).await?;
     preview::create_tasks_on_new_file(db, file).await?;
+    transcode::create_tasks_on_new_file(db, file).await?;
     Ok(())
 }
 
@@ -26,6 +28,7 @@ pub async fn run_task(
     match task.module.as_str() {
         metadata::MODULE_ID => metadata::run_task(db, config, task).await,
         preview::MODULE_ID => preview::run_task(db, config, task).await,
+        transcode::MODULE_ID => transcode::run_task(db, config, task).await,
         &_ => Err(format!("Unknown module in {:?}", task).into()),
     }?;
 

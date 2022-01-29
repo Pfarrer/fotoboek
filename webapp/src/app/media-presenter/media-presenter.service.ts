@@ -32,7 +32,7 @@ export class MediaPresenterService {
       return {
         video: {
           source: [
-            { src: `/api/images/${file_id}?size=original`, type: 'video/mp4' }
+            { src: `/api/videos/${file_id}`, type: 'video/webm' }
           ],
           tracks: [],
           attributes,

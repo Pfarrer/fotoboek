@@ -1,4 +1,4 @@
-use log::{debug, error};
+use log::{debug, error, trace};
 use persistance::models::Task;
 use persistance::FotoboekDatabase;
 use shared::models::FotoboekConfig;
@@ -9,7 +9,9 @@ pub fn spawn(db: FotoboekDatabase, config: &FotoboekConfig, worker_id: usize) {
     let config_copy = config.clone();
     task::spawn(async move {
         loop {
-            let task_option = Task::next_workable_by_priority_and_lock(&db, &config_copy).await;
+            let task_option = Task::next_workable_by_priority_and_lock(
+                &db, &config_copy, worker_id
+            ).await;
 
             if let Some(task) = task_option {
                 debug!(
@@ -18,7 +20,7 @@ pub fn spawn(db: FotoboekDatabase, config: &FotoboekConfig, worker_id: usize) {
                 );
                 run_task(&db, &config_copy, task).await;
             } else {
-                debug!("Worker {} has no workable tasks, going to sleep", worker_id);
+                trace!("Worker {} has no workable tasks, going to sleep", worker_id);
                 sleep(Duration::from_secs(60)).await;
             }
         }

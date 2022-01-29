@@ -1,4 +1,3 @@
-use rocket_sync_db_pools::rocket::State;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
@@ -47,7 +46,7 @@ fn video_base_dir_path(config: &FotoboekConfig) -> String {
 }
 
 /// Returns the path to the folder that contains preview images for the given arguments.
-fn video_dir_path(config: &FotoboekConfig, file_hash: &String) -> String {
+pub fn video_dir_path(config: &FotoboekConfig, file_hash: &String) -> String {
     let hash_prefix = &file_hash[0..2];
     format!("{}/{}", video_base_dir_path(config), hash_prefix)
 }
@@ -70,6 +69,6 @@ pub fn file_preview_path(
     )
 }
 
-pub fn video_path(config: &State<FotoboekConfig>, file_hash: &String) -> String {
+pub fn video_path(config: &FotoboekConfig, file_hash: &String) -> String {
     format!("{}/{}.webm", video_dir_path(config, file_hash), file_hash)
 }

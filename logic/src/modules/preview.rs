@@ -12,6 +12,7 @@ pub async fn create_tasks_on_new_file(db: &FotoboekDatabase, file: &File) -> Res
         file_id: file.id.unwrap(),
         module: MODULE_ID.into(),
         priority: 200,
+        max_worker_id: 1024,
         work_started_at: chrono::NaiveDateTime::from_timestamp(0, 0),
     }
     .insert(db)
