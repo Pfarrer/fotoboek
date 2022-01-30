@@ -9,9 +9,8 @@ pub fn spawn(db: FotoboekDatabase, config: &FotoboekConfig, worker_id: usize) {
     let config_copy = config.clone();
     task::spawn(async move {
         loop {
-            let task_option = Task::next_workable_by_priority_and_lock(
-                &db, &config_copy, worker_id
-            ).await;
+            let task_option =
+                Task::next_workable_by_priority_and_lock(&db, &config_copy, worker_id).await;
 
             if let Some(task) = task_option {
                 debug!(

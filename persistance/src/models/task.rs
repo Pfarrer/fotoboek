@@ -37,8 +37,11 @@ impl Task {
 
         db.run(move |conn| loop {
             let workable_tasks: Vec<Task> = dsl::tasks
-                .filter(dsl::work_started_at.le(dt_one_hour_ago)
-                    .and(dsl::max_worker_id.ge(worker_id as i32)))
+                .filter(
+                    dsl::work_started_at
+                        .le(dt_one_hour_ago)
+                        .and(dsl::max_worker_id.ge(worker_id as i32)),
+                )
                 .order(dsl::priority.asc())
                 .limit(1)
                 .load::<Task>(conn)

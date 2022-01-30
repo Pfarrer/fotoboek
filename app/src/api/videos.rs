@@ -1,8 +1,8 @@
-use persistance::models::{FileMetadata};
+use persistance::models::FileMetadata;
 use persistance::{fs, FotoboekDatabase};
 use rocket::fs::NamedFile;
 use rocket::State;
-use shared::models::{FotoboekConfig};
+use shared::models::FotoboekConfig;
 use std::path::Path;
 
 #[get("/videos/<file_id>")]

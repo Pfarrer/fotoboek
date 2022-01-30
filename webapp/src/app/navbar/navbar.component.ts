@@ -15,7 +15,7 @@ export class NavbarComponent implements OnInit, AfterViewInit {
     { url: '/flashback', icon: 'psychology', text: 'Flashback' },
     { url: '/people', icon: 'people', text: 'People' },
     { url: '/geo', icon: 'public', text: 'Geographic' },
-    { url: '/stats', icon: 'insights', text: 'Statistics' },
+    { url: '/admin', icon: 'insights', text: 'Admin' },
   ];
 
   constructor() { }

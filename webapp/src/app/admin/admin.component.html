@@ -1,0 +1,55 @@
+<div class="row">
+
+  <div class="col s12">
+    <h3>Statistics</h3>
+  </div>
+
+  <div class="col s6 l3">
+    <div class="card blue-grey">
+      <div class="card-content white-text number-statistic">
+        <span class="card-title">{{ (tasks$ | async)?.length || 0 }}</span>
+        <p>Open Tasks</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col s6 l3">
+    <div class="card blue-grey">
+      <div class="card-content white-text number-statistic">
+        <span class="card-title">{{ total_images_count }}</span>
+        <p>Images</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col s6 l3">
+    <div class="card blue-grey">
+      <div class="card-content white-text number-statistic">
+        <span class="card-title">{{ total_videos_count }}</span>
+        <p>Videos</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col s6 l3">
+    <div class="card blue-grey">
+      <div class="card-content white-text number-statistic">
+        <span class="card-title">{{ total_files_size | filesize }}</span>
+        <p>Total Media Size</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="row">
+
+  <div class="col s12">
+    <h4>Images and Videos by Date</h4>
+  </div>
+
+  <div class="col s12">
+    <div echarts [options]="chartOption" (chartInit)="onChartInit($event)" class="media-dates-chart"></div>
+  </div>
+
+</div>

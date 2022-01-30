@@ -17,7 +17,12 @@
   }
 }
 
-// Bugfix in Lightgallery: Videos are not shown because this ::before element takes their place
+// Change to Lightgallery: Videos are not shown because this ::before element takes their place, and
 .lg-show .lg-outer .lg-item::before {
   display: none;
+}
+// Change to Lightgallery: Video is too large (probably linked to above change)
+.lg-show .lg-outer .lg-item video {
+  max-width: 100%;
+  max-height: 100%;
 }

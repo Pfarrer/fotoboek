@@ -1,10 +1,10 @@
-use std::process::Command;
 use log::debug;
-use persistance::{FotoboekDatabase, fs};
 use persistance::models::{File, FileMetadata, Task};
+use persistance::{fs, FotoboekDatabase};
 use shared::models::FotoboekConfig;
-use std::str::from_utf8;
 use shared::path_utils::rel_to_abs;
+use std::process::Command;
+use std::str::from_utf8;
 
 pub const MODULE_ID: &str = "transcode";
 
@@ -19,8 +19,8 @@ pub async fn create_tasks_on_new_file(db: &FotoboekDatabase, file: &File) -> Res
             max_worker_id: 0,
             work_started_at: chrono::NaiveDateTime::from_timestamp(0, 0),
         }
-            .insert(db)
-            .await?;
+        .insert(db)
+        .await?;
     }
 
     Ok(())
@@ -51,17 +51,27 @@ fn execute_command(source_path: String, target_path: String, threads: usize) -> 
     debug!("Starting transcode video {}, pass 1...", source_path);
     let output = Command::new("ffmpeg")
         .args(vec![
-            "-i", source_path.as_str(),
-            "-c:v", "libvpx-vp9",
-            "-pass", "1",
-            "-b:v", "1000K",
-            "-threads", format!("{}", threads).as_str(),
-            "-speed", "4",
-            "-tile-columns", "6",
-            "-frame-parallel", "1",
+            "-i",
+            source_path.as_str(),
+            "-c:v",
+            "libvpx-vp9",
+            "-pass",
+            "1",
+            "-b:v",
+            "1000K",
+            "-threads",
+            format!("{}", threads).as_str(),
+            "-speed",
+            "4",
+            "-tile-columns",
+            "6",
+            "-frame-parallel",
+            "1",
             "-an",
-            "-f", "webm", "-y",
-            "/dev/null"
+            "-f",
+            "webm",
+            "-y",
+            "/dev/null",
         ])
         .output()
         .map_err(|err| err.to_string())?;
@@ -73,29 +83,46 @@ fn execute_command(source_path: String, target_path: String, threads: usize) -> 
     debug!("Transcode pass 1 done, starting with pass 2...");
     let output = Command::new("ffmpeg")
         .args(vec![
-            "-i", source_path.as_str(),
-            "-c:v", "libvpx-vp9",
-            "-pass", "2",
-            "-b:v", "1000K",
-            "-threads", format!("{}", threads).as_str(),
-            "-speed", "1",
-            "-tile-columns", "6",
-            "-frame-parallel", "1",
-            "-auto-alt-ref", "1",
-            "-lag-in-frames", "25",
-            "-c:a", "libopus",
-            "-b:a", "64k",
-            "-f", "webm", "-y",
+            "-i",
+            source_path.as_str(),
+            "-c:v",
+            "libvpx-vp9",
+            "-pass",
+            "2",
+            "-b:v",
+            "1000K",
+            "-threads",
+            format!("{}", threads).as_str(),
+            "-speed",
+            "1",
+            "-tile-columns",
+            "6",
+            "-frame-parallel",
+            "1",
+            "-auto-alt-ref",
+            "1",
+            "-lag-in-frames",
+            "25",
+            "-c:a",
+            "libopus",
+            "-b:a",
+            "64k",
+            "-f",
+            "webm",
+            "-y",
             target_path.as_str(),
         ])
         .output()
         .map_err(|err| err.to_string())?;
 
-
     if output.status.success() {
         debug!("Transcode pass 2 done, result stored at {}", target_path);
         Ok(())
     } else {
-        Err(format!("Pass 2 failed: ExitStatus: {},\nStderr: {}", output.status, from_utf8(&output.stderr).unwrap()))
+        Err(format!(
+            "Pass 2 failed: ExitStatus: {},\nStderr: {}",
+            output.status,
+            from_utf8(&output.stderr).unwrap()
+        ))
     }
 }

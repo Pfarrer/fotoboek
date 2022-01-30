@@ -1,4 +1,4 @@
-use persistance::models::{FileMetadata};
+use persistance::models::FileMetadata;
 use persistance::{fs, FotoboekDatabase};
 use rocket::fs::NamedFile;
 use rocket::State;

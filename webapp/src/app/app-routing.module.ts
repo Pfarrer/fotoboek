@@ -5,7 +5,7 @@ import { TimelineComponent } from './timeline/timeline.component';
 import { FlashbackComponent } from './flashback/flashback.component';
 import { PeopleComponent } from './people/people.component';
 import { GeoComponent } from './geo/geo.component';
-import { StatsComponent } from './stats/stats.component';
+import { AdminComponent } from './admin/admin.component';
 
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'timeline' },
@@ -15,7 +15,7 @@ const routes: Routes = [
   { path: 'flashback', component: FlashbackComponent },
   { path: 'people', component: PeopleComponent },
   { path: 'geo', component: GeoComponent },
-  { path: 'stats', component: StatsComponent },
+  { path: 'admin', component: AdminComponent },
 ];
 
 @NgModule({

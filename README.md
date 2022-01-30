@@ -37,12 +37,14 @@ added files will be returned once the scan is finished. Depending on the number 
 ## Open/Finished Tasks
 - JPG Image Indexing
   - [x] Index images recursively
-  - [x] Trigger index by `GET /api/admin/scan`
+  - [x] Trigger index by `POST /api/admin/scan`
   - [ ] Trigger index on startup
   - [ ] Trigger index on filesystem events (inotify)
   - [ ] Detect removed images
 - Video Indexing
-  - [ ] Index videos recursively
+  - [x] Index videos recursively
+  - [x] Generate preview images for videos
+  - [x] Transcode videos for size and compatibility
 - User Interface & Features
   - [x] Basic Gallery
     - [x] Preview image for folders
@@ -65,7 +67,7 @@ added files will be returned once the scan is finished. Depending on the number 
   - [ ] Allow manual override of image date/order
 - Image Preview
   - [x] Generate thumbnail and preview images for JPGs
-  - [x] Optimize previews for size and quality
+  - [x] Optimize previews to reduce size
 
 
 ## Compile

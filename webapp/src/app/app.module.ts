@@ -15,10 +15,12 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { FlashbackComponent } from './flashback/flashback.component';
 import { PeopleComponent } from './people/people.component';
 import { GeoComponent } from './geo/geo.component';
-import { StatsComponent } from './stats/stats.component';
+import { AdminComponent } from './admin/admin.component';
 import { FlashbackDateFormatterPipe } from './flashback/flashback-date-formatter.pipe';
 import { LightgalleryModule } from "lightgallery/angular";
 import { MediaPreviewComponent } from './media-preview/media-preview.component';
+import { NgxEchartsModule } from "ngx-echarts";
+import { NgxFilesizeModule } from "ngx-filesize";
 
 @NgModule({
   declarations: [
@@ -31,7 +33,7 @@ import { MediaPreviewComponent } from './media-preview/media-preview.component';
     FlashbackComponent,
     PeopleComponent,
     GeoComponent,
-    StatsComponent,
+    AdminComponent,
     FlashbackDateFormatterPipe,
     MediaPreviewComponent,
   ],
@@ -41,6 +43,10 @@ import { MediaPreviewComponent } from './media-preview/media-preview.component';
     BrowserAnimationsModule,
     HttpClientModule,
     LightgalleryModule,
+    NgxEchartsModule.forRoot({
+      echarts: () => import('echarts'),
+    }),
+    NgxFilesizeModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
       // Register the ServiceWorker as soon as the app is stable
