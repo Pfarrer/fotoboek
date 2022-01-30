@@ -9,7 +9,7 @@ pub fn routes() -> Vec<rocket::Route> {
     routes![
         admin::scan,
         admin::tasks,
-        admin::media_statistic,
+        admin::media_statistics,
         images::image_by_id_and_size,
         videos::video_by_id,
         timeline::get_dates,
