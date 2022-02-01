@@ -1,8 +1,23 @@
-FROM pfarrer/fotoboek-builder:latest AS rust-builder
+FROM pfarrer/fotoboek-builder:latest AS rust-chef
 
 WORKDIR /opt/fotoboek
+
+
+FROM rust-chef AS rust-planner
+
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+
+FROM rust-chef AS rust-builder
+
+COPY --from=rust-planner /opt/fotoboek/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
+
+# Build application
 COPY . .
 RUN cargo build --release
+
 
 FROM node:lts AS angular-builder
 
@@ -10,6 +25,7 @@ WORKDIR /opt/webapp
 COPY webapp/ .
 RUN npm install
 RUN npm run build
+
 
 FROM pfarrer/fotoboek-runtime:latest AS runtime
 

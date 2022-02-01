@@ -9,3 +9,5 @@ RUN apt-get update \
     && apt-get install -y \
         libsqlite3-dev libopencv-dev \
         llvm-dev clang libclang-dev
+
+RUN cargo install cargo-chef

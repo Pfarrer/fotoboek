@@ -4,3 +4,4 @@ Dockerfile
 _fotoboek.sqlite*
 _file-storage
 .idea/
+webapp/
