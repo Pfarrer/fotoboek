@@ -24,6 +24,7 @@ pub struct FileMetadata {
     pub exif_gps_lat: Option<f32>,
     pub exif_gps_lon: Option<f32>,
     pub effective_date: NaiveDateTime,
+    pub filename_date: Option<NaiveDateTime>
 }
 
 impl FileMetadata {

@@ -1,16 +1,21 @@
 use std::io::{Cursor, Read};
+use std::path::PathBuf;
+use std::str::FromStr;
 
 use chrono::NaiveDateTime;
+use lazy_static::lazy_static;
 use log::warn;
 use mp4::{Mp4Reader, TrackType};
 use opencv::imgcodecs;
 use opencv::prelude::MatTraitManual;
 use rexif::{ExifData, ExifTag};
 use sha256::digest_bytes;
+use regex::{Captures, Regex};
 
 use persistance::models::{File, FileMetadata, Task};
 use persistance::FotoboekDatabase;
 use shared::models::FotoboekConfig;
+use shared::path_utils;
 use shared::path_utils::rel_to_abs;
 
 pub const MODULE_ID: &str = "metadata";
@@ -33,6 +38,7 @@ pub async fn create_tasks_on_new_file(db: &FotoboekDatabase, file: &File) -> Res
 trait MetadataExtractor {
     fn resolution(&self) -> (i32, i32);
     fn creation_date(&self) -> Option<NaiveDateTime>;
+    fn filename_date(&self) -> Option<NaiveDateTime>;
     fn camera_manufacturer(&self) -> Option<String> {
         None
     }
@@ -89,6 +95,7 @@ impl MetadataExtractor for ImageMetadataExtractor {
 
         (size.width, size.height)
     }
+
     fn creation_date(&self) -> Option<NaiveDateTime> {
         if let Some(value) = self.get_exif_value(ExifTag::DateTime) {
             NaiveDateTime::parse_from_str(&value, &"%Y:%m:%d %H:%M:%S").ok()
@@ -96,6 +103,13 @@ impl MetadataExtractor for ImageMetadataExtractor {
             None
         }
     }
+
+    fn filename_date(&self) -> Option<NaiveDateTime> {
+        let path_buf = PathBuf::from(&self.abs_path);
+        let filename = path_utils::get_filename(&path_buf);
+        search_for_date_time_in_filename(filename)
+    }
+
     fn camera_manufacturer(&self) -> Option<String> {
         self.get_exif_value(ExifTag::Make)
     }
@@ -171,6 +185,12 @@ impl MetadataExtractor for VideoMetadataExtractor {
         })
     }
 
+    fn filename_date(&self) -> Option<NaiveDateTime> {
+        let path_buf = PathBuf::from(&self.abs_path);
+        let filename = path_utils::get_filename(&path_buf);
+        search_for_date_time_in_filename(filename)
+    }
+
     fn creation_date(&self) -> Option<NaiveDateTime> {
         self.mp4.as_ref().map(|mp4| {
             let mut creation_time = mp4.moov.mvhd.creation_time;
@@ -182,9 +202,14 @@ impl MetadataExtractor for VideoMetadataExtractor {
                 creation_time
             };
 
-            NaiveDateTime::from_timestamp(creation_time as i64, 0)
-        })
+            if creation_time == 0 {
+                None
+            } else {
+                Some(NaiveDateTime::from_timestamp(creation_time as i64, 0))
+            }
+        }).flatten()
     }
+
     fn video_duration(&self) -> Option<i32> {
         self.mp4.as_ref().map(|mp4| mp4.duration().as_secs() as i32)
     }
@@ -211,6 +236,7 @@ pub async fn run_task(
 
         let (resolution_x, resolution_y) = metadata_extractor.resolution();
         let creation_date = metadata_extractor.creation_date();
+        let filename_date = metadata_extractor.filename_date();
         let exif_gps_lat_lon = metadata_extractor.gps_lat_lon();
 
         FileMetadata {
@@ -228,7 +254,8 @@ pub async fn run_task(
             exif_iso: metadata_extractor.exif_iso(),
             exif_gps_lat: exif_gps_lat_lon.map(|lat_lon| lat_lon.0),
             exif_gps_lon: exif_gps_lat_lon.map(|lat_lon| lat_lon.1),
-            effective_date: creation_date.unwrap_or(file_date),
+            effective_date: creation_date.or(filename_date).unwrap_or(file_date),
+            filename_date,
         }
     };
 
@@ -256,4 +283,65 @@ fn get_file_size_and_date(abs_path: &String) -> Result<(i32, NaiveDateTime), Str
         .into();
 
     Ok((file_size, file_date_time.naive_utc()))
+}
+
+fn search_for_date_time_in_filename(filename: String) -> Option<NaiveDateTime> {
+    lazy_static! {
+        static ref RE: Regex = Regex::new(
+            r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})([^\d]*)((?P<hour>\d{2})(?P<minute>\d{2})(?P<second>\d{2}))?"
+        ).unwrap();
+    }
+
+    RE.captures(filename.as_str()).map(|cap: Captures| {
+        let year: i32 = cap.name("year").unwrap().as_str().parse().unwrap();
+        let month: u32 = cap.name("month").unwrap().as_str().parse().unwrap();
+        let day: u32 = cap.name("day").unwrap().as_str().parse().unwrap();
+
+        let hour: u32 = cap.name("hour").map(|str| str.as_str().parse().unwrap()).unwrap_or(0);
+        let minute: u32 = cap.name("minute").map(|str| str.as_str().parse().unwrap()).unwrap_or(0);
+        let second: u32 = cap.name("second").map(|str| str.as_str().parse().unwrap()).unwrap_or(0);
+
+        ymd_hms_to_native_datetime(year, month, day, hour, minute, second)
+    }).flatten()
+}
+
+fn ymd_hms_to_native_datetime(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32) -> Option<NaiveDateTime> {
+    NaiveDateTime::from_str(&format!("{year}-{month}-{day}T{hour}:{minute}:{second}")).ok()
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+    use chrono::NaiveDateTime;
+
+    #[test]
+    fn test_search_for_date_time_in_filename() {
+        use crate::modules::metadata::search_for_date_time_in_filename as test_method;
+
+        assert_eq!(None, test_method("".to_string()));
+        assert_eq!(None, test_method("VID123.mp4".to_string()));
+
+        // Successful cases
+        assert_eq!(
+            Some(NaiveDateTime::from_str("2020-05-15T00:00:00").unwrap()),
+            test_method("VID-20200515-WA0002.mp4".to_string())
+        );
+        assert_eq!(
+            Some(NaiveDateTime::from_str("1990-12-31T13:14:15").unwrap()),
+            test_method("IMG_19901231131415.jpg".to_string())
+        );
+        assert_eq!(
+            Some(NaiveDateTime::from_str("1990-12-31T13:14:15").unwrap()),
+            test_method("IMG_19901231_131415Z.jpg".to_string())
+        );
+
+        // Error cases
+        assert_eq!(None, test_method("VID-20201315-WA0002.mp4".to_string()));
+        assert_eq!(None, test_method("VID-20200015-WA0002.mp4".to_string()));
+        assert_eq!(None, test_method("VID-20200942-WA0002.mp4".to_string()));
+        assert_eq!(None, test_method("VID-20200900-WA0002.mp4".to_string()));
+        assert_eq!(None, test_method("VID-20200901-241415.jpg".to_string()));
+        assert_eq!(None, test_method("VID-20200901-236015.jpg".to_string()));
+        assert_eq!(None, test_method("VID-20200901-235961.jpg".to_string()));
+    }
 }

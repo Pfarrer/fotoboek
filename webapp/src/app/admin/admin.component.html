@@ -53,3 +53,43 @@
   </div>
 
 </div>
+
+<div class="row">
+
+  <div class="col s12">
+    <h3>Actions</h3>
+  </div>
+
+  <div class="col s12">
+    <a (click)="triggerFilesScan(); $event.preventDefault()" href="#" class="btn">
+      <i class="material-icons left">system_update_alt</i>Scan for new files
+    </a>
+
+    <div id="scan-modal" class="modal">
+      <div class="modal-content">
+        <h4>Scanning...</h4>
+        <div *ngIf="scan_result == null" class="progress">
+          <div class="indeterminate"></div>
+        </div>
+        <div *ngIf="scan_result != null" class="collection">
+          <div class="collection-item">
+            <span *ngIf="scan_result.images_removed > 0" class="badge red" data-badge-caption="removed">{{ scan_result.images_removed }}</span>
+            <span *ngIf="scan_result.images_added > 0" class="badge new" data-badge-caption="added">{{ scan_result.images_added }}</span>
+            <span *ngIf="scan_result.images_removed + scan_result.images_added == 0" class="badge black">No changes</span>
+            Images
+          </div>
+          <div class="collection-item">
+            <span *ngIf="scan_result.videos_removed > 0" class="badge red" data-badge-caption="removed">{{ scan_result.videos_removed }}</span>
+            <span *ngIf="scan_result.videos_added > 0" class="badge new" data-badge-caption="added">{{ scan_result.videos_added }}</span>
+            <span *ngIf="scan_result.videos_removed + scan_result.videos_added == 0" class="badge black">No changes</span>
+            Videos
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button [disabled]="scan_result == null" href="#" class="modal-close btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+</div>

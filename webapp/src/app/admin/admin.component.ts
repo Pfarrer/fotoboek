@@ -4,6 +4,8 @@ import { HttpClient } from "@angular/common/http";
 import { share } from "rxjs/operators";
 import { Observable } from "rxjs";
 
+declare var M: any;
+
 type Task = Object;
 
 interface MediaDayStatistic {
@@ -14,6 +16,15 @@ interface MediaDayStatistic {
 }
 
 type MediaStatistics = { [date: string]: MediaDayStatistic };
+
+interface ScanResult {
+  images_total: number,
+  images_added: number,
+  images_removed: number,
+  videos_total: number,
+  videos_added: number,
+  videos_removed: number,
+}
 
 @Component({
   selector: 'app-stats',
@@ -29,6 +40,7 @@ export class AdminComponent implements OnInit {
   total_images_count: number;
   total_videos_count: number;
   total_files_size: number;
+  scan_result: ScanResult | null;
 
   constructor(
     private http: HttpClient
@@ -105,5 +117,17 @@ export class AdminComponent implements OnInit {
       (acc, statistic) => acc+statistic.images_size_bytes+statistic.videos_size_bytes,
       0
     );
+  }
+
+  triggerFilesScan() {
+    this.scan_result = null;
+
+    const options = {
+      dismissible: false
+    };
+    const [modal_instance] = M.Modal.init(document.querySelectorAll('#scan-modal'), options);
+    modal_instance.open();
+
+    this.http.post('/api/admin/scan', {}).subscribe((result: ScanResult) => this.scan_result = result);
   }
 }

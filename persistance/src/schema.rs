@@ -15,6 +15,7 @@ table! {
         exif_gps_lat -> Nullable<Float>,
         exif_gps_lon -> Nullable<Float>,
         effective_date -> Timestamp,
+        filename_date -> Nullable<Timestamp>,
     }
 }
 
@@ -41,4 +42,8 @@ table! {
 joinable!(file_metadata -> files (file_id));
 joinable!(tasks -> files (file_id));
 
-allow_tables_to_appear_in_same_query!(file_metadata, files, tasks,);
+allow_tables_to_appear_in_same_query!(
+    file_metadata,
+    files,
+    tasks,
+);
