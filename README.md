@@ -1,6 +1,9 @@
 # Fotoboek
 Fotoboek is a service that indexes your image gallery optimized for viewing many images in nested folders. It will prepare a thumbnail and preview for each image, extract metadata (EXIF mostly) and image paths. With this, you can browse your photos by (recursive) image path, date or, geographic location.
 
+# This project is discontinued!
+... in favor of https://photoprism.app/ which is a newly identical project, far more major and advanced than this project.
+
 
 ## Run it yourself
 The simplest method to run Fotoboek is by using Docker:
